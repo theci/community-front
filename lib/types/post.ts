@@ -1,0 +1,82 @@
+export interface Post {
+  id: number;
+  title: string;
+  content: string;
+  summary?: string;
+  author: PostAuthor;
+  category?: Category;
+  tags: Tag[];
+  status: PostStatus;
+  viewCount: number;
+  likeCount: number;
+  scrapCount: number;
+  commentCount: number;
+  isNotice: boolean;
+  publishedAt?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface PostAuthor {
+  id: number;
+  username: string;
+  nickname: string;
+  avatarUrl?: string;
+}
+
+export interface Category {
+  id: number;
+  name: string;
+  slug: string;
+  description?: string;
+  parentId?: number;
+  children?: Category[];
+}
+
+export interface Tag {
+  id: number;
+  name: string;
+  slug: string;
+  usageCount: number;
+}
+
+export enum PostStatus {
+  DRAFT = 'DRAFT',
+  PUBLISHED = 'PUBLISHED',
+  DELETED = 'DELETED',
+}
+
+export interface PostCreateRequest {
+  title: string;
+  content: string;
+  summary?: string;
+  categoryId?: number;
+  tagIds?: number[];
+  status: PostStatus;
+}
+
+export interface PostUpdateRequest {
+  title?: string;
+  content?: string;
+  summary?: string;
+  categoryId?: number;
+  tagIds?: number[];
+}
+
+export interface PostSearchRequest {
+  keyword?: string;
+  categoryId?: number;
+  tagIds?: number[];
+  authorId?: number;
+  startDate?: string;
+  endDate?: string;
+  status?: PostStatus;
+}
+
+export interface PostListResponse {
+  content: Post[];
+  totalElements: number;
+  totalPages: number;
+  currentPage: number;
+  pageSize: number;
+}
