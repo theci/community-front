@@ -10,7 +10,7 @@ export default function Home() {
 
   const handleLogout = () => {
     logout();
-    router.push('/');
+    // 이미 메인 페이지에 있으므로 리다이렉트 불필요
   };
 
   return (

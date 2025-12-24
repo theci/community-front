@@ -67,11 +67,12 @@ export const useAuthStore = create<AuthState>()(
       },
 
       logout: () => {
+        // JWT는 stateless이므로 클라이언트에서 토큰만 제거하면 됨
+        // 백엔드 API 호출 불필요 (401 에러 방지)
         if (typeof window !== 'undefined') {
           localStorage.removeItem('accessToken');
           localStorage.removeItem('refreshToken');
         }
-        authService.logout().catch(() => {});
         set({
           user: null,
           accessToken: null,
