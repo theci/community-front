@@ -16,9 +16,12 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
+# Build arguments for environment variables
+ARG NEXT_PUBLIC_API_URL=http://localhost:8080/api/v1
+
 # Environment variables for build
 ENV NEXT_TELEMETRY_DISABLED=1
-ENV NEXT_PUBLIC_API_URL=http://community-api:8080/api/v1
+ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
 
 # Build application
 RUN npm run build

@@ -1,4 +1,18 @@
+'use client';
+
+import Link from 'next/link';
+import { useAuth } from '@/lib/hooks';
+import { useRouter } from 'next/navigation';
+
 export default function Home() {
+  const { isAuthenticated, user, logout } = useAuth();
+  const router = useRouter();
+
+  const handleLogout = () => {
+    logout();
+    router.push('/');
+  };
+
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-8">
       <main className="max-w-4xl mx-auto text-center">
@@ -8,6 +22,40 @@ export default function Home() {
         <p className="text-xl text-gray-600 dark:text-gray-400 mb-8">
           DDD 기반 프로덕션급 커뮤니티 플랫폼
         </p>
+
+        <div className="flex gap-4 justify-center mb-12">
+          {isAuthenticated ? (
+            <>
+              <div className="px-6 py-3 bg-gray-100 rounded-lg">
+                <p className="text-gray-700">
+                  환영합니다, <span className="font-semibold">{user?.nickname || user?.username}</span>님!
+                </p>
+              </div>
+              <button
+                onClick={handleLogout}
+                className="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium"
+              >
+                로그아웃
+              </button>
+            </>
+          ) : (
+            <>
+              <Link
+                href="/login"
+                className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+              >
+                로그인
+              </Link>
+              <Link
+                href="/register"
+                className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
+              >
+                회원가입
+              </Link>
+            </>
+          )}
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-12">
           <div className="p-6 border rounded-lg hover:shadow-lg transition-shadow">
             <h2 className="text-2xl font-semibold mb-2">게시판</h2>
