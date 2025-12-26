@@ -1,7 +1,7 @@
 'use client';
 
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { persist, createJSONStorage } from 'zustand/middleware';
 import { authService } from '../services';
 import type { User, LoginRequest, RegisterRequest } from '../types';
 
@@ -21,7 +21,7 @@ interface AuthState {
 
 export const useAuthStore = create<AuthState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       user: null,
       accessToken: null,
       isAuthenticated: false,
@@ -32,6 +32,10 @@ export const useAuthStore = create<AuthState>()(
         set({ isLoading: true, error: null });
         try {
           const response = await authService.login(credentials);
+
+          // 디버깅: 로그인 응답 확인
+          console.log('Login response:', response);
+
           if (typeof window !== 'undefined') {
             localStorage.setItem('accessToken', response.accessToken);
             localStorage.setItem('refreshToken', response.refreshToken);
@@ -43,7 +47,11 @@ export const useAuthStore = create<AuthState>()(
             isAuthenticated: true,
             isLoading: false,
           });
+
+          // 디버깅: 저장된 상태 확인
+          console.log('Auth state after login:', { user: response.user, isAuthenticated: true });
         } catch (error: any) {
+          console.error('Login error:', error);
           set({
             error: error.response?.data?.message || '로그인에 실패했습니다.',
             isLoading: false,
@@ -86,8 +94,10 @@ export const useAuthStore = create<AuthState>()(
     }),
     {
       name: 'auth-storage',
+      storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
         user: state.user,
+        accessToken: state.accessToken,
         isAuthenticated: state.isAuthenticated,
       }),
     }

@@ -73,10 +73,16 @@ export interface PostSearchRequest {
   status?: PostStatus;
 }
 
-export interface PostListResponse {
-  content: Post[];
+export interface PageInfo {
   totalElements: number;
   totalPages: number;
   currentPage: number;
   pageSize: number;
+  hasNext: boolean;
+  hasPrevious: boolean;
+}
+
+export interface PostListResponse {
+  content: Post[];
+  pageInfo: PageInfo;
 }

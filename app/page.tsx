@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/lib/hooks';
 import { useRouter } from 'next/navigation';
@@ -7,6 +8,11 @@ import { useRouter } from 'next/navigation';
 export default function Home() {
   const { isAuthenticated, user, logout } = useAuth();
   const router = useRouter();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handleLogout = () => {
     logout();
@@ -24,7 +30,11 @@ export default function Home() {
         </p>
 
         <div className="flex gap-4 justify-center mb-12">
-          {isAuthenticated ? (
+          {!mounted ? (
+            <div className="px-6 py-3">
+              <div className="animate-pulse h-10 w-32 bg-gray-200 rounded-lg"></div>
+            </div>
+          ) : isAuthenticated ? (
             <>
               <div className="px-6 py-3 bg-gray-100 rounded-lg">
                 <p className="text-gray-700">
@@ -57,12 +67,12 @@ export default function Home() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-12">
-          <div className="p-6 border rounded-lg hover:shadow-lg transition-shadow">
+          <Link href="/posts" className="p-6 border rounded-lg hover:shadow-lg transition-shadow cursor-pointer">
             <h2 className="text-2xl font-semibold mb-2">게시판</h2>
             <p className="text-gray-600 dark:text-gray-400">
               게시글 작성, 댓글, 좋아요, 스크랩 기능
             </p>
-          </div>
+          </Link>
           <div className="p-6 border rounded-lg hover:shadow-lg transition-shadow">
             <h2 className="text-2xl font-semibold mb-2">사용자</h2>
             <p className="text-gray-600 dark:text-gray-400">

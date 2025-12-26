@@ -34,7 +34,9 @@ apiClient.interceptors.response.use(
       // Handle token refresh or redirect to login
       if (typeof window !== 'undefined') {
         localStorage.removeItem('accessToken');
-        window.location.href = '/login';
+        // Preserve current URL as redirect parameter
+        const currentPath = window.location.pathname;
+        window.location.href = `/login?redirect=${encodeURIComponent(currentPath)}`;
       }
     }
     return Promise.reject(error);

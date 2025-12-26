@@ -1,5 +1,7 @@
 export * from './authService';
 export * from './postService';
+export * from './categoryService';
 export * from './commentService';
 export * from './scrapService';
 export * from './pointService';
+export * from './attachmentService';
