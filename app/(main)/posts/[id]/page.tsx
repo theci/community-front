@@ -3,10 +3,15 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import rehypeRaw from 'rehype-raw';
+import rehypeSanitize from 'rehype-sanitize';
 import { postService } from '@/lib/services';
 import { Post } from '@/lib/types';
 import { useAuth } from '@/lib/hooks';
 import { Button, Modal } from '@/components/ui';
+import { CommentList } from '@/components/features/comment';
 
 export default function PostDetailPage() {
   const router = useRouter();
@@ -25,11 +30,14 @@ export default function PostDetailPage() {
 
   useEffect(() => {
     loadPost();
-    if (isAuthenticated) {
+  }, [postId]);
+
+  useEffect(() => {
+    if (isAuthenticated && user?.id) {
       loadLikeStatus();
       loadScrapStatus();
     }
-  }, [postId, isAuthenticated]);
+  }, [postId, isAuthenticated, user]);
 
   const loadPost = async () => {
     try {
@@ -47,8 +55,9 @@ export default function PostDetailPage() {
   };
 
   const loadLikeStatus = async () => {
+    if (!user?.id) return;
     try {
-      const status = await postService.getLikeStatus(postId);
+      const status = await postService.getLikeStatus(postId, user.id);
       setLiked(status.liked);
     } catch (err) {
       console.error('Failed to load like status:', err);
@@ -56,8 +65,9 @@ export default function PostDetailPage() {
   };
 
   const loadScrapStatus = async () => {
+    if (!user?.id) return;
     try {
-      const status = await postService.getScrapStatus(postId);
+      const status = await postService.getScrapStatus(postId, user.id);
       setScraped(status.scraped);
     } catch (err) {
       console.error('Failed to load scrap status:', err);
@@ -227,10 +237,13 @@ export default function PostDetailPage() {
           )}
 
           {/* 본문 */}
-          <div className="prose max-w-none mt-8 mb-8">
-            <div className="text-gray-800 leading-relaxed whitespace-pre-wrap">
+          <div className="prose prose-lg max-w-none mt-8 mb-8 text-gray-800 leading-relaxed">
+            <ReactMarkdown
+              remarkPlugins={[remarkGfm]}
+              rehypePlugins={[rehypeRaw, rehypeSanitize]}
+            >
               {post.content}
-            </div>
+            </ReactMarkdown>
           </div>
 
           {/* 액션 버튼 */}
@@ -284,14 +297,9 @@ export default function PostDetailPage() {
           </div>
         </div>
 
-        {/* 댓글 영역 (추후 구현) */}
+        {/* 댓글 영역 */}
         <div className="bg-white rounded-lg shadow-sm p-8">
-          <h2 className="text-xl font-bold text-gray-900 mb-4">
-            댓글 {post.commentCount}
-          </h2>
-          <p className="text-gray-500 text-center py-8">
-            댓글 기능은 Phase 4에서 구현 예정입니다.
-          </p>
+          <CommentList postId={postId} />
         </div>
 
         {/* 삭제 확인 모달 */}

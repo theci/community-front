@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { postService } from '@/lib/services';
-import { Post } from '@/lib/types';
+import { postService, categoryService } from '@/lib/services';
+import { Post, Category } from '@/lib/types';
 import { PostCard } from '@/components/features/post/PostCard';
 import { Button } from '@/components/ui';
 import Link from 'next/link';
@@ -14,30 +14,44 @@ export default function PostsPage() {
   const [page, setPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [sortBy, setSortBy] = useState<'latest' | 'popular' | 'trending'>('latest');
+  const [searchKeyword, setSearchKeyword] = useState('');
+  const [searchInput, setSearchInput] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
+  const [categories, setCategories] = useState<Category[]>([]);
 
-  const loadPosts = async (currentPage: number, sort: string) => {
+  const loadPosts = async (currentPage: number, sort: string, keyword?: string, categoryId?: number | null) => {
     try {
       setLoading(true);
       setError(null);
 
       let response;
-      if (sort === 'latest') {
-        response = await postService.getPosts(currentPage, 20, 'createdAt,desc');
-        console.log('Post list response:', response);
-        console.log('Posts content:', response?.content);
-        console.log('Total posts:', response?.pageInfo?.totalElements);
+
+      // 검색 또는 카테고리 필터가 있는 경우
+      if (keyword || categoryId) {
+        if (keyword) {
+          response = await postService.searchPosts({ keyword, categoryId: categoryId || undefined }, currentPage, 20);
+        } else if (categoryId) {
+          // 카테고리별 조회는 별도 엔드포인트 사용 예정
+          response = await postService.getPosts(currentPage, 20, 'createdAt,desc');
+          // TODO: 카테고리별 조회 API 구현
+        }
         setPosts(response?.content || []);
         setTotalPages(response?.pageInfo?.totalPages || 0);
-      } else if (sort === 'popular') {
-        const popularPosts = await postService.getPopularPosts(20);
-        console.log('Popular posts:', popularPosts);
-        setPosts(popularPosts || []);
-        setTotalPages(1);
-      } else if (sort === 'trending') {
-        const trendingPosts = await postService.getTrendingPosts(7);
-        console.log('Trending posts:', trendingPosts);
-        setPosts(trendingPosts || []);
-        setTotalPages(1);
+      } else {
+        // 일반 목록 조회
+        if (sort === 'latest') {
+          response = await postService.getPosts(currentPage, 20, 'createdAt,desc');
+          setPosts(response?.content || []);
+          setTotalPages(response?.pageInfo?.totalPages || 0);
+        } else if (sort === 'popular') {
+          const popularPosts = await postService.getPopularPosts(20);
+          setPosts(popularPosts || []);
+          setTotalPages(1);
+        } else if (sort === 'trending') {
+          const trendingPosts = await postService.getTrendingPosts(7);
+          setPosts(trendingPosts || []);
+          setTotalPages(1);
+        }
       }
     } catch (err: any) {
       console.error('Failed to load posts:', err);
@@ -49,11 +63,35 @@ export default function PostsPage() {
   };
 
   useEffect(() => {
-    loadPosts(page, sortBy);
-  }, [page, sortBy]);
+    loadCategories();
+  }, []);
+
+  useEffect(() => {
+    loadPosts(page, sortBy, searchKeyword, selectedCategory);
+  }, [page, sortBy, searchKeyword, selectedCategory]);
+
+  const loadCategories = async () => {
+    try {
+      const data = await categoryService.getCategories();
+      setCategories(data || []);
+    } catch (err) {
+      console.error('Failed to load categories:', err);
+    }
+  };
 
   const handleSortChange = (newSort: 'latest' | 'popular' | 'trending') => {
     setSortBy(newSort);
+    setPage(0);
+  };
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    setSearchKeyword(searchInput);
+    setPage(0);
+  };
+
+  const handleCategoryChange = (categoryId: number | null) => {
+    setSelectedCategory(categoryId);
     setPage(0);
   };
 
@@ -80,6 +118,41 @@ export default function PostsPage() {
               글쓰기
             </Button>
           </Link>
+        </div>
+
+        {/* 검색 및 필터 */}
+        <div className="bg-white rounded-lg shadow-sm p-4 mb-6">
+          <div className="flex flex-col md:flex-row gap-4">
+            {/* 검색 바 */}
+            <form onSubmit={handleSearch} className="flex-1">
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={searchInput}
+                  onChange={(e) => setSearchInput(e.target.value)}
+                  placeholder="게시글 검색..."
+                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+                <Button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white">
+                  검색
+                </Button>
+              </div>
+            </form>
+
+            {/* 카테고리 필터 */}
+            <select
+              value={selectedCategory || ''}
+              onChange={(e) => handleCategoryChange(e.target.value ? Number(e.target.value) : null)}
+              className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="">전체 카테고리</option>
+              {categories.map((category) => (
+                <option key={category.id} value={category.id}>
+                  {category.name}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
 
         {/* 정렬 옵션 */}

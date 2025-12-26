@@ -68,8 +68,9 @@ export const postService = {
     return response.data.data;
   },
 
-  getLikeStatus: async (postId: number): Promise<{ liked: boolean }> => {
-    const response = await apiClient.get<ApiResponse<{ liked: boolean }>>(`/posts/${postId}/like/status`);
+  getLikeStatus: async (postId: number, currentUserId?: number): Promise<{ liked: boolean }> => {
+    const params = currentUserId ? { currentUserId } : {};
+    const response = await apiClient.get<ApiResponse<{ liked: boolean }>>(`/posts/${postId}/like/status`, { params });
     return response.data.data;
   },
 
@@ -78,8 +79,9 @@ export const postService = {
     return response.data.data;
   },
 
-  getScrapStatus: async (postId: number): Promise<{ scraped: boolean }> => {
-    const response = await apiClient.get<ApiResponse<{ scraped: boolean }>>(`/posts/${postId}/scrap/status`);
+  getScrapStatus: async (postId: number, currentUserId?: number): Promise<{ scraped: boolean }> => {
+    const params = currentUserId ? { currentUserId } : {};
+    const response = await apiClient.get<ApiResponse<{ scraped: boolean }>>(`/posts/${postId}/scrap/status`, { params });
     return response.data.data;
   },
 };
