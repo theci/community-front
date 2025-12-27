@@ -4,7 +4,7 @@ export default function Footer() {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="bg-gray-900 text-gray-300">
+    <footer className="bg-gray-900 dark:bg-black text-gray-300 dark:text-gray-400">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* 브랜드 섹션 */}
@@ -12,7 +12,7 @@ export default function Footer() {
             <Link href="/" className="flex items-center mb-4">
               <span className="text-2xl font-bold text-white">Community</span>
             </Link>
-            <p className="text-gray-400 mb-4">
+            <p className="text-gray-400 dark:text-gray-500 mb-4">
               지식을 공유하고 소통하는 커뮤니티 플랫폼
             </p>
             <div className="flex space-x-4">
@@ -92,19 +92,19 @@ export default function Footer() {
         </div>
 
         {/* 하단 영역 */}
-        <div className="mt-8 pt-8 border-t border-gray-800">
+        <div className="mt-8 pt-8 border-t border-gray-800 dark:border-gray-900">
           <div className="flex flex-col md:flex-row justify-between items-center">
-            <p className="text-gray-400 text-sm">
+            <p className="text-gray-400 dark:text-gray-500 text-sm">
               &copy; {currentYear} Community Platform. All rights reserved.
             </p>
             <div className="flex space-x-6 mt-4 md:mt-0">
-              <Link href="/terms" className="text-gray-400 hover:text-white text-sm transition-colors">
+              <Link href="/terms" className="text-gray-400 dark:text-gray-500 hover:text-white text-sm transition-colors">
                 이용약관
               </Link>
-              <Link href="/privacy" className="text-gray-400 hover:text-white text-sm transition-colors">
+              <Link href="/privacy" className="text-gray-400 dark:text-gray-500 hover:text-white text-sm transition-colors">
                 개인정보처리방침
               </Link>
-              <Link href="/contact" className="text-gray-400 hover:text-white text-sm transition-colors">
+              <Link href="/contact" className="text-gray-400 dark:text-gray-500 hover:text-white text-sm transition-colors">
                 문의
               </Link>
             </div>

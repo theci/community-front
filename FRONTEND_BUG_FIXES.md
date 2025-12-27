@@ -1687,3 +1687,202 @@ getScrapStatus API response: {data: true}
 ### 참고 파일
 - `app/(main)/posts/[id]/page.tsx` - 게시글 상세 페이지
 - `lib/services/postService.ts` - 게시글 API 서비스
+
+---
+
+## 12. Phase 8 다크모드 구현 - globals.css 설정 문제
+
+### 문제
+**날짜**: 2025-12-27
+
+다크모드 토글 버튼을 클릭하면 `<html>` 태그에 `dark` 클래스가 정상적으로 추가되지만, 화면 색상이 변경되지 않음
+
+**디버깅 로그**:
+```
+[ThemeToggle] Setting theme to: dark
+[themeStore] setTheme called with: dark
+[applyTheme] Added dark class
+[ThemeProvider] Updated classes: dark  // ✅ dark 클래스는 추가됨
+```
+
+### 원인
+`globals.css`에서 다크모드 스타일이 `@media (prefers-color-scheme: dark)` (시스템 설정 기반)으로 정의되어 있었음
+
+**문제가 있던 코드**:
+```css
+/* app/globals.css */
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+```
+
+**문제점**:
+- Tailwind는 `darkMode: 'class'`로 설정되어 `.dark` 클래스 기반 동작
+- 하지만 `globals.css`는 시스템 설정(`prefers-color-scheme`)을 따르도록 설정
+- 토글 버튼으로 `dark` 클래스를 추가해도 CSS가 반응하지 않음
+
+### 해결
+
+`globals.css`를 `.dark` 클래스 기반으로 변경:
+
+```css
+/* app/globals.css (수정 후) */
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+.dark {
+  --background: #0a0a0a;
+  --foreground: #ededed;
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: Arial, Helvetica, sans-serif;
+}
+```
+
+**변경 사항**:
+- `@media (prefers-color-scheme: dark)` → `.dark` 클래스 선택자
+- 이제 `<html class="dark">`가 추가되면 CSS 변수가 다크모드 값으로 변경됨
+
+### 학습 포인트
+
+#### 1. **Tailwind 다크모드 설정 일관성**
+
+`tailwind.config.ts`와 `globals.css`의 설정이 일치해야 함:
+
+```typescript
+// tailwind.config.ts
+export default {
+  darkMode: 'class',  // ✅ 클래스 기반 다크모드
+  // ...
+}
+```
+
+```css
+/* globals.css */
+.dark {  /* ✅ 클래스 선택자 사용 */
+  --background: #0a0a0a;
+  --foreground: #ededed;
+}
+```
+
+#### 2. **다크모드 구현 방식 비교**
+
+| 방식 | 장점 | 단점 | 적합한 경우 |
+|------|------|------|------------|
+| `darkMode: 'media'` | 시스템 설정 자동 반영 | 사용자가 직접 제어 불가 | 시스템 설정만 따르는 경우 |
+| `darkMode: 'class'` | 사용자가 직접 제어 가능 | 토글 기능 구현 필요 | 토글 버튼으로 제어하는 경우 |
+
+#### 3. **전체 다크모드 구현 체크리스트**
+
+1. **Tailwind 설정** (`tailwind.config.ts`):
+   ```typescript
+   darkMode: 'class'
+   ```
+
+2. **Global CSS** (`globals.css`):
+   ```css
+   .dark {
+     --background: #0a0a0a;
+     --foreground: #ededed;
+   }
+   ```
+
+3. **상태 관리** (`lib/store/themeStore.ts`):
+   - Zustand persist로 localStorage 저장
+   - `applyTheme()` 함수로 `<html>` 클래스 조작
+
+4. **Provider 컴포넌트** (`components/providers/ThemeProvider.tsx`):
+   - `initializeTheme()` 초기화
+   - `resolvedTheme` 변경 시 자동 적용
+
+5. **토글 버튼** (`components/ui/ThemeToggle.tsx`):
+   - 사용자 인터랙션 처리
+   - 아이콘 변경 (해/달)
+
+6. **컴포넌트 스타일링**:
+   - 모든 주요 컴포넌트에 `dark:` 접두사 클래스 추가
+   - 예: `bg-white dark:bg-gray-800`
+
+#### 4. **디버깅 팁**
+
+다크모드가 작동하지 않을 때 확인 사항:
+
+```bash
+# 1. HTML 클래스 확인
+개발자 도구 > Elements > <html> 태그에 class="dark" 있는지 확인
+
+# 2. CSS 변수 확인
+개발자 도구 > Elements > Styles 탭 > --background 값 변경되는지 확인
+
+# 3. Tailwind 컴파일 확인
+개발 서버 재시작 후 Ctrl+Shift+R (강력 새로고침)
+```
+
+#### 5. **CSS 우선순위 이해**
+
+```css
+/* 낮은 우선순위 */
+@media (prefers-color-scheme: dark) { ... }
+
+/* 높은 우선순위 */
+.dark { ... }
+
+/* 가장 높은 우선순위 */
+.dark .specific-class { ... }
+```
+
+`.dark` 클래스 선택자가 미디어 쿼리보다 명시도가 높아 우선 적용됨
+
+### 적용된 컴포넌트 목록
+
+다크모드 클래스가 적용된 컴포넌트들:
+
+1. **레이아웃**:
+   - `app/layout.tsx` - ThemeProvider 래핑
+   - `app/page.tsx` - 메인 페이지
+   - `components/layout/Header.tsx` - 헤더
+   - `components/layout/Footer.tsx` - 푸터
+   - `components/layout/Sidebar.tsx` - 사이드바
+
+2. **페이지**:
+   - `app/(main)/posts/page.tsx` - 게시글 목록
+   - `app/(main)/posts/[id]/page.tsx` - 게시글 상세 (TODO)
+   - `app/(main)/scraps/page.tsx` - 스크랩 폴더
+   - 기타 페이지들 (TODO)
+
+3. **컴포넌트**:
+   - `components/features/post/PostCard.tsx` - 게시글 카드
+   - `components/ui/ThemeToggle.tsx` - 테마 토글 버튼
+   - `components/providers/ThemeProvider.tsx` - 테마 프로바이더
+
+### 향후 작업
+
+나머지 페이지와 컴포넌트에도 다크모드 클래스 적용 필요:
+- 게시글 상세 페이지
+- 댓글 컴포넌트
+- 프로필 페이지
+- 랭킹 페이지
+- 로그인/회원가입 페이지
+- 게시글 작성/수정 페이지
+
+### 참고 파일
+- `tailwind.config.ts` - Tailwind 설정
+- `app/globals.css` - 전역 CSS
+- `lib/store/themeStore.ts` - 테마 상태 관리
+- `components/providers/ThemeProvider.tsx` - 테마 프로바이더
+- `components/ui/ThemeToggle.tsx` - 테마 토글 버튼
+
+---

@@ -158,20 +158,20 @@ export default function PostDetailPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 dark:border-blue-500"></div>
       </div>
     );
   }
 
   if (error || !post) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">게시글을 불러올 수 없습니다</h2>
-          <p className="text-gray-600 mb-6">{error}</p>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">게시글을 불러올 수 없습니다</h2>
+          <p className="text-gray-600 dark:text-gray-400 mb-6">{error}</p>
           <Link href="/posts">
-            <Button className="bg-blue-600 hover:bg-blue-700 text-white">
+            <Button className="bg-blue-600 dark:bg-blue-500 hover:bg-blue-700 dark:hover:bg-blue-600 text-white">
               목록으로 돌아가기
             </Button>
           </Link>
@@ -183,46 +183,46 @@ export default function PostDetailPage() {
   const isAuthor = user?.id === post.author.id;
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <div className="max-w-4xl mx-auto px-4 py-8">
         {/* 상단 네비게이션 */}
         <div className="mb-6">
-          <Link href="/posts" className="text-blue-600 hover:text-blue-700 font-medium">
+          <Link href="/posts" className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-500 font-medium">
             ← 목록으로
           </Link>
         </div>
 
         {/* 게시글 헤더 */}
-        <div className="bg-white rounded-lg shadow-sm p-8 mb-4">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-8 mb-4 border border-gray-200 dark:border-gray-700">
           {/* 카테고리 & 공지 */}
           <div className="flex items-center gap-2 mb-4">
             {post.category && (
-              <span className="px-3 py-1 text-sm font-medium bg-blue-100 text-blue-700 rounded">
+              <span className="px-3 py-1 text-sm font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded">
                 {post.category.name}
               </span>
             )}
             {post.isNotice && (
-              <span className="px-3 py-1 text-sm font-medium bg-red-100 text-red-700 rounded">
+              <span className="px-3 py-1 text-sm font-medium bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 rounded">
                 공지
               </span>
             )}
           </div>
 
           {/* 제목 */}
-          <h1 className="text-3xl font-bold text-gray-900 mb-4">{post.title}</h1>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">{post.title}</h1>
 
           {/* 메타 정보 */}
-          <div className="flex items-center justify-between pb-6 border-b border-gray-200">
+          <div className="flex items-center justify-between pb-6 border-b border-gray-200 dark:border-gray-700">
             <div className="flex items-center gap-4">
-              <span className="font-medium text-gray-900">
+              <span className="font-medium text-gray-900 dark:text-white">
                 {post.author.nickname || post.author.username}
               </span>
-              <span className="text-gray-500 text-sm">
+              <span className="text-gray-500 dark:text-gray-400 text-sm">
                 {formatDate(post.createdAt)}
               </span>
             </div>
 
-            <div className="flex items-center gap-4 text-sm text-gray-500">
+            <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
               <span className="flex items-center gap-1">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -241,11 +241,11 @@ export default function PostDetailPage() {
 
           {/* 태그 */}
           {post.tags && post.tags.length > 0 && (
-            <div className="flex flex-wrap gap-2 pt-6 pb-6 border-b border-gray-200">
+            <div className="flex flex-wrap gap-2 pt-6 pb-6 border-b border-gray-200 dark:border-gray-700">
               {post.tags.map((tag) => (
                 <span
                   key={tag.id}
-                  className="px-3 py-1 text-sm text-gray-600 bg-gray-100 rounded hover:bg-gray-200 cursor-pointer"
+                  className="px-3 py-1 text-sm text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 rounded hover:bg-gray-200 dark:hover:bg-gray-600 cursor-pointer"
                 >
                   #{tag.name}
                 </span>
@@ -254,7 +254,7 @@ export default function PostDetailPage() {
           )}
 
           {/* 본문 */}
-          <div className="prose prose-lg max-w-none mt-8 mb-8 text-gray-800 leading-relaxed">
+          <div className="prose prose-lg dark:prose-invert max-w-none mt-8 mb-8 text-gray-800 dark:text-gray-300 leading-relaxed">
             <ReactMarkdown
               remarkPlugins={[remarkGfm]}
               rehypePlugins={[rehypeRaw, rehypeSanitize]}
@@ -264,14 +264,14 @@ export default function PostDetailPage() {
           </div>
 
           {/* 액션 버튼 */}
-          <div className="flex items-center justify-between pt-6 border-t border-gray-200">
+          <div className="flex items-center justify-between pt-6 border-t border-gray-200 dark:border-gray-700">
             <div className="flex items-center gap-3">
               <button
                 onClick={handleLike}
                 className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${
                   liked
-                    ? 'bg-red-100 text-red-600 hover:bg-red-200'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    ? 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/50'
+                    : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
                 }`}
               >
                 <svg className="w-5 h-5" fill={liked ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
@@ -284,8 +284,8 @@ export default function PostDetailPage() {
                 onClick={handleScrap}
                 className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${
                   scraped
-                    ? 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 hover:bg-yellow-200 dark:hover:bg-yellow-900/50'
+                    : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
                 }`}
               >
                 <svg className="w-5 h-5" fill={scraped ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
@@ -299,13 +299,13 @@ export default function PostDetailPage() {
             {isAuthor && (
               <div className="flex items-center gap-2">
                 <Link href={`/posts/${postId}/edit`}>
-                  <Button className="bg-gray-600 hover:bg-gray-700 text-white">
+                  <Button className="bg-gray-600 dark:bg-gray-700 hover:bg-gray-700 dark:hover:bg-gray-600 text-white">
                     수정
                   </Button>
                 </Link>
                 <Button
                   onClick={() => setShowDeleteModal(true)}
-                  className="bg-red-600 hover:bg-red-700 text-white"
+                  className="bg-red-600 dark:bg-red-700 hover:bg-red-700 dark:hover:bg-red-600 text-white"
                 >
                   삭제
                 </Button>
@@ -315,7 +315,7 @@ export default function PostDetailPage() {
         </div>
 
         {/* 댓글 영역 */}
-        <div className="bg-white rounded-lg shadow-sm p-8">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-8 border border-gray-200 dark:border-gray-700">
           <CommentList postId={postId} />
         </div>
 
@@ -325,21 +325,21 @@ export default function PostDetailPage() {
           onClose={() => setShowDeleteModal(false)}
           title="게시글 삭제"
         >
-          <p className="text-gray-600 mb-6">
+          <p className="text-gray-600 dark:text-gray-400 mb-6">
             정말로 이 게시글을 삭제하시겠습니까?<br />
             삭제된 게시글은 복구할 수 없습니다.
           </p>
           <div className="flex justify-end gap-3">
             <Button
               onClick={() => setShowDeleteModal(false)}
-              className="bg-gray-200 hover:bg-gray-300 text-gray-700"
+              className="bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300"
               disabled={isDeleting}
             >
               취소
             </Button>
             <Button
               onClick={handleDelete}
-              className="bg-red-600 hover:bg-red-700 text-white"
+              className="bg-red-600 dark:bg-red-700 hover:bg-red-700 dark:hover:bg-red-600 text-white"
               disabled={isDeleting}
               isLoading={isDeleting}
             >

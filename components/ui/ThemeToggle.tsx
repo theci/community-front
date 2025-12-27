@@ -1,21 +1,15 @@
 'use client';
 
-import { useEffect } from 'react';
 import { useThemeStore } from '@/lib/store/themeStore';
 
 export default function ThemeToggle() {
-  const { theme, resolvedTheme, setTheme, initializeTheme } = useThemeStore();
-
-  useEffect(() => {
-    initializeTheme();
-  }, [initializeTheme]);
+  const { theme, resolvedTheme, setTheme } = useThemeStore();
 
   const toggleTheme = () => {
-    if (resolvedTheme === 'light') {
-      setTheme('dark');
-    } else {
-      setTheme('light');
-    }
+    console.log('[ThemeToggle] Current theme:', theme, 'Resolved:', resolvedTheme);
+    const newTheme = resolvedTheme === 'light' ? 'dark' : 'light';
+    console.log('[ThemeToggle] Setting theme to:', newTheme);
+    setTheme(newTheme);
   };
 
   return (

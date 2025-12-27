@@ -16,15 +16,24 @@ const getSystemTheme = (): 'light' | 'dark' => {
 };
 
 const applyTheme = (theme: 'light' | 'dark') => {
-  if (typeof window === 'undefined') return;
+  console.log('[applyTheme] Called with theme:', theme);
+  if (typeof window === 'undefined') {
+    console.log('[applyTheme] Window is undefined, skipping');
+    return;
+  }
 
   const root = document.documentElement;
+  console.log('[applyTheme] Current classes before:', root.className);
 
   if (theme === 'dark') {
     root.classList.add('dark');
+    console.log('[applyTheme] Added dark class');
   } else {
     root.classList.remove('dark');
+    console.log('[applyTheme] Removed dark class');
   }
+
+  console.log('[applyTheme] Current classes after:', root.className);
 };
 
 export const useThemeStore = create<ThemeStore>()(
@@ -34,14 +43,19 @@ export const useThemeStore = create<ThemeStore>()(
       resolvedTheme: 'light',
 
       setTheme: (theme: Theme) => {
+        console.log('[themeStore] setTheme called with:', theme);
         const resolved = theme === 'system' ? getSystemTheme() : theme;
+        console.log('[themeStore] Resolved theme:', resolved);
         applyTheme(resolved);
         set({ theme, resolvedTheme: resolved });
+        console.log('[themeStore] State updated');
       },
 
       initializeTheme: () => {
         const { theme } = get();
+        console.log('[themeStore] initializeTheme - current theme:', theme);
         const resolved = theme === 'system' ? getSystemTheme() : theme;
+        console.log('[themeStore] initializeTheme - resolved theme:', resolved);
         applyTheme(resolved);
         set({ resolvedTheme: resolved });
 

@@ -108,20 +108,20 @@ export default function PostsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <div className="max-w-6xl mx-auto px-4 py-8">
         {/* 헤더 */}
         <div className="flex items-center justify-between mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">게시판</h1>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">게시판</h1>
           <Link href="/posts/create">
-            <Button className="bg-blue-600 hover:bg-blue-700 text-white">
+            <Button className="bg-blue-600 dark:bg-blue-500 hover:bg-blue-700 dark:hover:bg-blue-600 text-white">
               글쓰기
             </Button>
           </Link>
         </div>
 
         {/* 검색 및 필터 */}
-        <div className="bg-white rounded-lg shadow-sm p-4 mb-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 mb-6">
           <div className="flex flex-col md:flex-row gap-4">
             {/* 검색 바 */}
             <form onSubmit={handleSearch} className="flex-1">
@@ -131,9 +131,9 @@ export default function PostsPage() {
                   value={searchInput}
                   onChange={(e) => setSearchInput(e.target.value)}
                   placeholder="게시글 검색..."
-                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
-                <Button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white">
+                <Button type="submit" className="bg-blue-600 dark:bg-blue-500 hover:bg-blue-700 dark:hover:bg-blue-600 text-white">
                   검색
                 </Button>
               </div>
@@ -143,7 +143,7 @@ export default function PostsPage() {
             <select
               value={selectedCategory || ''}
               onChange={(e) => handleCategoryChange(e.target.value ? Number(e.target.value) : null)}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="">전체 카테고리</option>
               {categories.map((category) => (
@@ -161,8 +161,8 @@ export default function PostsPage() {
             onClick={() => handleSortChange('latest')}
             className={`px-4 py-2 rounded-lg font-medium transition-colors ${
               sortBy === 'latest'
-                ? 'bg-blue-600 text-white'
-                : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                ? 'bg-blue-600 dark:bg-blue-500 text-white'
+                : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
             }`}
           >
             최신순
@@ -171,8 +171,8 @@ export default function PostsPage() {
             onClick={() => handleSortChange('popular')}
             className={`px-4 py-2 rounded-lg font-medium transition-colors ${
               sortBy === 'popular'
-                ? 'bg-blue-600 text-white'
-                : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                ? 'bg-blue-600 dark:bg-blue-500 text-white'
+                : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
             }`}
           >
             인기순
@@ -181,8 +181,8 @@ export default function PostsPage() {
             onClick={() => handleSortChange('trending')}
             className={`px-4 py-2 rounded-lg font-medium transition-colors ${
               sortBy === 'trending'
-                ? 'bg-blue-600 text-white'
-                : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                ? 'bg-blue-600 dark:bg-blue-500 text-white'
+                : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
             }`}
           >
             트렌딩
@@ -198,7 +198,7 @@ export default function PostsPage() {
 
         {/* 에러 상태 */}
         {error && !loading && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6">
+          <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 px-4 py-3 rounded-lg mb-6">
             {error}
           </div>
         )}
@@ -208,9 +208,9 @@ export default function PostsPage() {
           <>
             {posts.length === 0 ? (
               <div className="text-center py-12">
-                <p className="text-gray-500 mb-4">아직 작성된 게시글이 없습니다.</p>
+                <p className="text-gray-500 dark:text-gray-400 mb-4">아직 작성된 게시글이 없습니다.</p>
                 <Link href="/posts/create">
-                  <Button className="bg-blue-600 hover:bg-blue-700 text-white">
+                  <Button className="bg-blue-600 dark:bg-blue-500 hover:bg-blue-700 dark:hover:bg-blue-600 text-white">
                     첫 게시글 작성하기
                   </Button>
                 </Link>
@@ -231,8 +231,8 @@ export default function PostsPage() {
                   disabled={page === 0}
                   className={`px-4 py-2 rounded-lg border ${
                     page === 0
-                      ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                      : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                      ? 'bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-600 cursor-not-allowed border-gray-300 dark:border-gray-700'
+                      : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
                   }`}
                 >
                   이전
@@ -257,8 +257,8 @@ export default function PostsPage() {
                         onClick={() => setPage(pageNum)}
                         className={`px-4 py-2 rounded-lg ${
                           page === pageNum
-                            ? 'bg-blue-600 text-white'
-                            : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                            ? 'bg-blue-600 dark:bg-blue-500 text-white'
+                            : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
                         }`}
                       >
                         {pageNum + 1}
@@ -272,8 +272,8 @@ export default function PostsPage() {
                   disabled={page >= totalPages - 1}
                   className={`px-4 py-2 rounded-lg border ${
                     page >= totalPages - 1
-                      ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                      : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                      ? 'bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-600 cursor-not-allowed border-gray-300 dark:border-gray-700'
+                      : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
                   }`}
                 >
                   다음

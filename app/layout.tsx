@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import ThemeProvider from "@/components/providers/ThemeProvider";
 
 export const metadata: Metadata = {
   title: "Community Platform",
@@ -14,7 +15,9 @@ export default function RootLayout({
   return (
     <html lang="ko">
       <body className="antialiased">
-        {children}
+        <ThemeProvider>
+          {children}
+        </ThemeProvider>
       </body>
     </html>
   );

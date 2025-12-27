@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/lib/hooks';
 import { postService } from '@/lib/services';
+import Header from '@/components/layout/Header';
+import Footer from '@/components/layout/Footer';
 import Sidebar from '@/components/layout/Sidebar';
 import type { Post } from '@/lib/types';
 
@@ -38,7 +40,9 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-gray-900">
+      <Header />
+      <main className="flex-1">
       {/* 히어로 섹션 */}
       <section className="bg-gradient-to-r from-blue-600 to-blue-800 text-white py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -88,7 +92,7 @@ export default function Home() {
             {/* 인기 게시글 */}
             <section className="mb-12">
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold text-gray-900">인기 게시글</h2>
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">인기 게시글</h2>
                 <Link
                   href="/posts?sort=popular"
                   className="text-blue-600 hover:text-blue-700 font-medium"
@@ -100,10 +104,10 @@ export default function Home() {
               {loading ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {[1, 2, 3, 4].map((i) => (
-                    <div key={i} className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 animate-pulse">
-                      <div className="h-6 bg-gray-200 rounded w-3/4 mb-3"></div>
-                      <div className="h-4 bg-gray-200 rounded w-full mb-2"></div>
-                      <div className="h-4 bg-gray-200 rounded w-2/3"></div>
+                    <div key={i} className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 animate-pulse">
+                      <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mb-3"></div>
+                      <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full mb-2"></div>
+                      <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-2/3"></div>
                     </div>
                   ))}
                 </div>
@@ -113,17 +117,17 @@ export default function Home() {
                     <Link
                       key={post.id}
                       href={`/posts/${post.id}`}
-                      className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow"
+                      className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-shadow"
                     >
-                      <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-2">
+                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2 line-clamp-2">
                         {post.title}
                       </h3>
                       {post.summary && (
-                        <p className="text-gray-600 text-sm mb-3 line-clamp-2">
+                        <p className="text-gray-600 dark:text-gray-300 text-sm mb-3 line-clamp-2">
                           {post.summary}
                         </p>
                       )}
-                      <div className="flex items-center gap-4 text-sm text-gray-500">
+                      <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
                         <span>👁️ {post.viewCount}</span>
                         <span>❤️ {post.likeCount}</span>
                         <span>💬 {post.commentCount}</span>
@@ -132,7 +136,7 @@ export default function Home() {
                   ))}
                 </div>
               ) : (
-                <div className="bg-white p-12 rounded-lg shadow-sm border border-gray-200 text-center text-gray-500">
+                <div className="bg-white dark:bg-gray-800 p-12 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 text-center text-gray-500 dark:text-gray-400">
                   게시글이 없습니다.
                 </div>
               )}
@@ -141,13 +145,13 @@ export default function Home() {
             {/* 트렌딩 게시글 */}
             <section>
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold text-gray-900 flex items-center">
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center">
                   <span className="mr-2">🔥</span>
                   트렌딩
                 </h2>
                 <Link
                   href="/posts?sort=trending"
-                  className="text-blue-600 hover:text-blue-700 font-medium"
+                  className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-medium"
                 >
                   더보기 →
                 </Link>
@@ -156,9 +160,9 @@ export default function Home() {
               {loading ? (
                 <div className="grid grid-cols-1 gap-4">
                   {[1, 2, 3].map((i) => (
-                    <div key={i} className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 animate-pulse">
-                      <div className="h-6 bg-gray-200 rounded w-3/4 mb-3"></div>
-                      <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+                    <div key={i} className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 animate-pulse">
+                      <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mb-3"></div>
+                      <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
                     </div>
                   ))}
                 </div>
@@ -168,18 +172,18 @@ export default function Home() {
                     <Link
                       key={post.id}
                       href={`/posts/${post.id}`}
-                      className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow"
+                      className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-shadow"
                     >
-                      <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-1">
+                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2 line-clamp-1">
                         {post.title}
                       </h3>
                       <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-4 text-sm text-gray-500">
+                        <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
                           <span>👁️ {post.viewCount}</span>
                           <span>❤️ {post.likeCount}</span>
                           <span>💬 {post.commentCount}</span>
                         </div>
-                        <span className="text-sm text-gray-500">
+                        <span className="text-sm text-gray-500 dark:text-gray-400">
                           {new Date(post.createdAt).toLocaleDateString()}
                         </span>
                       </div>
@@ -187,7 +191,7 @@ export default function Home() {
                   ))}
                 </div>
               ) : (
-                <div className="bg-white p-12 rounded-lg shadow-sm border border-gray-200 text-center text-gray-500">
+                <div className="bg-white dark:bg-gray-800 p-12 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 text-center text-gray-500 dark:text-gray-400">
                   트렌딩 게시글이 없습니다.
                 </div>
               )}
@@ -198,6 +202,8 @@ export default function Home() {
           <Sidebar />
         </div>
       </div>
+      </main>
+      <Footer />
     </div>
   );
 }

@@ -30,34 +30,34 @@ export function PostCard({ post }: PostCardProps) {
 
   return (
     <Link href={`/posts/${post.id}`}>
-      <div className="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-lg transition-shadow cursor-pointer">
+      <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6 hover:shadow-lg transition-shadow cursor-pointer">
         {/* 헤더 */}
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
             {post.category && (
-              <span className="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-700 rounded">
+              <span className="px-2 py-1 text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded">
                 {post.category.name}
               </span>
             )}
             {post.isNotice && (
-              <span className="px-2 py-1 text-xs font-medium bg-red-100 text-red-700 rounded">
+              <span className="px-2 py-1 text-xs font-medium bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 rounded">
                 공지
               </span>
             )}
           </div>
-          <span className="text-sm text-gray-500">
+          <span className="text-sm text-gray-500 dark:text-gray-400">
             {formatDate(post.createdAt)}
           </span>
         </div>
 
         {/* 제목 */}
-        <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-2 hover:text-blue-600">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2 line-clamp-2 hover:text-blue-600 dark:hover:text-blue-400">
           {post.title}
         </h3>
 
         {/* 요약 */}
         {post.summary && (
-          <p className="text-gray-600 text-sm mb-4 line-clamp-2">
+          <p className="text-gray-600 dark:text-gray-300 text-sm mb-4 line-clamp-2">
             {post.summary}
           </p>
         )}
@@ -68,7 +68,7 @@ export function PostCard({ post }: PostCardProps) {
             {post.tags.slice(0, 3).map((tag) => (
               <span
                 key={tag.id}
-                className="px-2 py-1 text-xs text-gray-600 bg-gray-100 rounded hover:bg-gray-200"
+                className="px-2 py-1 text-xs text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 rounded hover:bg-gray-200 dark:hover:bg-gray-600"
               >
                 #{tag.name}
               </span>
@@ -77,14 +77,14 @@ export function PostCard({ post }: PostCardProps) {
         )}
 
         {/* 푸터 */}
-        <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+        <div className="flex items-center justify-between pt-4 border-t border-gray-100 dark:border-gray-700">
           <div className="flex items-center gap-2">
-            <span className="text-sm text-gray-700 font-medium">
+            <span className="text-sm text-gray-700 dark:text-gray-300 font-medium">
               {post.author.nickname || post.author.username}
             </span>
           </div>
 
-          <div className="flex items-center gap-4 text-sm text-gray-500">
+          <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
             <span className="flex items-center gap-1">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
