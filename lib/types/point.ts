@@ -1,19 +1,24 @@
 export interface PointInfo {
+  id: number;
   userId: number;
   totalPoints: number;
   availablePoints: number;
-  level: PointLevel;
-  tierBadge: string;
+  currentLevel: string; // "LEVEL_1", "LEVEL_2", etc.
+  levelDisplayName: string; // "초보", "일반", etc.
+  levelNumber: number;
+  pointsToNextLevel: number;
+  dailyEarnedPoints: number;
+  remainingDailyLimit: number;
+  lastEarnedDate: string;
   createdAt: string;
-  updatedAt: string;
 }
 
 export enum PointLevel {
-  BRONZE = 'BRONZE',
-  SILVER = 'SILVER',
-  GOLD = 'GOLD',
-  PLATINUM = 'PLATINUM',
-  DIAMOND = 'DIAMOND',
+  LEVEL_1 = 'LEVEL_1',
+  LEVEL_2 = 'LEVEL_2',
+  LEVEL_3 = 'LEVEL_3',
+  LEVEL_4 = 'LEVEL_4',
+  LEVEL_5 = 'LEVEL_5',
 }
 
 export interface PointTransaction {
@@ -41,5 +46,6 @@ export interface PointRanking {
     avatarUrl?: string;
   };
   totalPoints: number;
-  level: PointLevel;
+  currentLevel: string; // "LEVEL_1", "LEVEL_2", etc.
+  levelDisplayName: string;
 }

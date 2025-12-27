@@ -5,3 +5,4 @@ export * from './commentService';
 export * from './scrapService';
 export * from './pointService';
 export * from './attachmentService';
+export * from './userService';

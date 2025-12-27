@@ -53,3 +53,18 @@ export interface AuthResponse {
 export interface RefreshTokenRequest {
   refreshToken: string;
 }
+
+export interface UserStats {
+  postCount: number;
+  commentCount: number;
+  likeCount: number;
+  scrapCount: number;
+  followerCount?: number;
+  followingCount?: number;
+}
+
+export interface UserWithStats extends User {
+  stats: UserStats;
+  points?: number;
+  level?: number;
+}

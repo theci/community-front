@@ -84,4 +84,42 @@ export const postService = {
     const response = await apiClient.get<ApiResponse<{ scraped: boolean }>>(`/posts/${postId}/scrap/status`, { params });
     return response.data.data;
   },
+
+  // 특정 작성자의 게시글 조회
+  getPostsByAuthor: async (authorId: number, page = 0, size = 20): Promise<Post[]> => {
+    const response = await apiClient.get<ApiResponse<PostListResponse>>(
+      `/posts/author/${authorId}?page=${page}&size=${size}`
+    );
+    return response.data.data.content;
+  },
+
+  // 좋아요한 게시글 조회
+  getLikedPosts: async (userId: number, page = 0, size = 20): Promise<Post[]> => {
+    const response = await apiClient.get(
+      `/posts/likes/me?currentUserId=${userId}&page=${page}&size=${size}`
+    );
+
+    // 응답이 { success, data } 형태인지 확인
+    if (response.data.success && response.data.data) {
+      return Array.isArray(response.data.data) ? response.data.data : [];
+    }
+
+    // 배열로 직접 반환되는 경우
+    return Array.isArray(response.data) ? response.data : [];
+  },
+
+  // 스크랩한 게시글 조회
+  getScrappedPosts: async (userId: number, page = 0, size = 20): Promise<Post[]> => {
+    const response = await apiClient.get(
+      `/posts/scraps/me?currentUserId=${userId}&page=${page}&size=${size}`
+    );
+
+    // 응답이 { success, data } 형태인지 확인
+    if (response.data.success && response.data.data) {
+      return Array.isArray(response.data.data) ? response.data.data : [];
+    }
+
+    // 배열로 직접 반환되는 경우
+    return Array.isArray(response.data) ? response.data : [];
+  },
 };
