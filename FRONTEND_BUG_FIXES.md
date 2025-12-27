@@ -560,14 +560,631 @@ export interface Attachment {
 
 ---
 
+---
+
+## 7. 게시글 미리보기 이미지 에러
+
+### 문제
+- 게시글 작성 페이지에서 "미리보기" 버튼 클릭 시 콘솔 에러 발생
+- 에러: `An empty string ("") was passed to the src attribute`
+- 브라우저가 현재 페이지 전체를 다운로드하려고 시도
+
+### 원인
+ReactMarkdown이 `temp:0` 같은 임시 URL이나 빈 문자열을 `<img src="">`로 렌더링
+
+**문제가 있던 코드**:
+```typescript
+// 마크다운에 temp:0, temp:1 같은 임시 URL 포함
+const content = "# 제목\n![이미지](temp:0)\n본문...";
+
+// ReactMarkdown이 그대로 렌더링 시도
+<ReactMarkdown>{content}</ReactMarkdown>
+// → <img src="temp:0"> 또는 <img src="">로 변환됨
+```
+
+### 해결
+ReactMarkdown에 커스텀 이미지 컴포넌트 추가
+
+```typescript
+// app/(main)/posts/create/page.tsx
+<ReactMarkdown
+  remarkPlugins={[remarkGfm]}
+  components={{
+    // ✅ 커스텀 이미지 렌더러: 유효한 URL만 렌더링
+    img: ({ node, src, alt, ...props }) => {
+      // src가 없거나 빈 문자열이면 렌더링하지 않음
+      if (!src || src.trim() === '') {
+        return <span className="text-red-500">[이미지 URL 없음: {alt}]</span>;
+      }
+
+      // temp: URL이면 로컬 blob URL로 교체해서 미리보기
+      if (src.startsWith('temp:')) {
+        const tempIndex = parseInt(src.replace('temp:', ''));
+        const imageFile = imageFiles[tempIndex];
+
+        if (imageFile?.localUrl) {
+          return (
+            <img
+              src={imageFile.localUrl}
+              alt={alt || ''}
+              {...props}
+              className="max-w-full h-auto"
+            />
+          );
+        } else {
+          return <span className="text-yellow-600">[이미지 로딩 중...]</span>;
+        }
+      }
+
+      // 일반 URL은 그대로 렌더링
+      return <img src={src} alt={alt || ''} {...props} className="max-w-full h-auto" />;
+    },
+  }}
+>
+  {content}
+</ReactMarkdown>
+```
+
+### 학습 포인트
+- ReactMarkdown은 `components` prop으로 커스텀 렌더러 지정 가능
+- `temp:` 접두사를 사용한 임시 URL은 실제 blob URL로 매핑 필요
+- 방어적 프로그래밍: src가 유효한지 항상 검증
+
+---
+
+## 8. Phase 5 구현 - 프로필/랭킹/스크랩 페이지 에러
+
+### 문제 1: Profile과 Scraps 페이지 로그인 리다이렉트
+
+**현상**:
+- Ranking 페이지는 정상 작동
+- Profile, Scraps 페이지는 로그인 페이지로 자동 리다이렉트
+
+### 원인
+Zustand persist 하이드레이션이 완료되기 전에 인증 상태 체크
+
+**문제가 있던 코드**:
+```typescript
+// lib/hooks/useAuth.ts
+export function useAuth() {
+  const { user, isAuthenticated, isLoading } = useAuthStore();
+
+  return {
+    isAuthenticated,  // ❌ localStorage 복원 전에는 false
+    isLoading,
+    // ...
+  };
+}
+
+// app/(main)/profile/page.tsx
+useEffect(() => {
+  if (!authLoading && !isAuthenticated) {
+    router.push('/login?redirect=/profile');  // ❌ 하이드레이션 전에 실행됨
+  }
+}, [authLoading, isAuthenticated]);
+```
+
+**동작 순서**:
+1. 페이지 로드 → `isAuthenticated = false` (초기값)
+2. useEffect 실행 → 로그인 페이지로 리다이렉트
+3. localStorage 하이드레이션 완료 → 너무 늦음!
+
+### 해결 1: 하이드레이션 상태 추적
+
+```typescript
+// lib/store/authStore.ts
+interface AuthState {
+  // ... 기존 상태
+  hasHydrated: boolean;  // ✅ 하이드레이션 완료 여부 추가
+
+  setHasHydrated: (state: boolean) => void;
+}
+
+export const useAuthStore = create<AuthState>()(
+  persist(
+    (set, get) => ({
+      // ... 기존 상태
+      hasHydrated: false,
+
+      setHasHydrated: (state) => set({ hasHydrated: state }),
+    }),
+    {
+      name: 'auth-storage',
+      storage: createJSONStorage(() => localStorage),
+      partialize: (state) => ({
+        user: state.user,
+        accessToken: state.accessToken,
+        isAuthenticated: state.isAuthenticated,
+      }),
+      onRehydrateStorage: () => (state) => {
+        // ✅ localStorage 복원 완료 시 hasHydrated를 true로 설정
+        state?.setHasHydrated(true);
+      },
+    }
+  )
+);
+
+// lib/hooks/useAuth.ts
+export function useAuth() {
+  const { user, isAuthenticated, isLoading, hasHydrated } = useAuthStore();
+
+  return {
+    user,
+    isAuthenticated,
+    isLoading: isLoading || !hasHydrated,  // ✅ 하이드레이션 완료 전까지 로딩 상태
+    // ...
+  };
+}
+```
+
+---
+
+### 문제 2: API currentUserId 파라미터 누락으로 500 에러
+
+**현상**:
+- ScrapService 호출 시 `Request failed with status code 500`
+- PointService는 정상 작동
+
+### 원인
+백엔드 API가 `currentUserId` 쿼리 파라미터를 필수로 요구
+
+**백엔드 API 명세** (DOCKER_TEST_GUIDE.md 참고):
+```
+GET  /api/v1/scrap-folders/me?currentUserId={userId}
+POST /api/v1/scrap-folders?currentUserId={userId}
+PUT  /api/v1/scrap-folders/{folderId}?currentUserId={userId}
+GET  /api/v1/posts/likes/me?currentUserId={userId}
+GET  /api/v1/posts/scraps/me?currentUserId={userId}
+```
+
+**문제가 있던 코드**:
+```typescript
+// lib/services/scrapService.ts
+getMyFolders: async (): Promise<ScrapFolder[]> => {
+  const response = await apiClient.get('/scrap-folders/me');  // ❌ currentUserId 없음
+  return response.data.data;
+}
+```
+
+### 해결 2: 모든 서비스 메서드에 currentUserId 추가
+
+```typescript
+// lib/services/scrapService.ts
+export const scrapService = {
+  getMyFolders: async (currentUserId: number): Promise<ScrapFolder[]> => {
+    const response = await apiClient.get('/scrap-folders/me', {
+      params: { currentUserId },  // ✅ 쿼리 파라미터 추가
+    });
+    // ... 응답 처리
+  },
+
+  createFolder: async (data: ScrapFolderCreateRequest, currentUserId: number) => {
+    const response = await apiClient.post('/scrap-folders', data, {
+      params: { currentUserId },  // ✅ POST 요청도 쿼리 파라미터 필요
+    });
+    // ...
+  },
+
+  // 모든 메서드에 동일하게 적용
+};
+
+// lib/services/postService.ts
+getLikedPosts: async (userId: number, page = 0, size = 20): Promise<Post[]> => {
+  const response = await apiClient.get(
+    `/posts/likes/me?currentUserId=${userId}&page=${page}&size=${size}`
+  );
+  // ...
+},
+
+getScrappedPosts: async (userId: number, page = 0, size = 20): Promise<Post[]> => {
+  const response = await apiClient.get(
+    `/posts/scraps/me?currentUserId=${userId}&page=${page}&size=${size}`
+  );
+  // ...
+},
+```
+
+**페이지에서 사용**:
+```typescript
+// app/(main)/scraps/page.tsx
+const loadFolders = async () => {
+  if (!user) return;
+
+  const foldersData = await scrapService.getMyFolders(user.id);  // ✅ user.id 전달
+  // ...
+};
+
+// app/(main)/profile/page.tsx
+const loadScrappedPosts = async () => {
+  if (!user) return;
+
+  const posts = await postService.getScrappedPosts(user.id);  // ✅ user.id 전달
+  // ...
+};
+```
+
+---
+
+### 문제 3: API 응답 구조 불일치로 `.map is not a function` 에러
+
+**현상**:
+- Profile 페이지 스크랩 탭: `scrappedPosts.map is not a function`
+- Scraps 페이지: `scraps.map is not a function`
+
+### 원인
+API 응답이 배열이 아닌 다른 형태로 반환될 수 있음
+
+**가능한 응답 형태**:
+```typescript
+// 형태 1: 래핑된 응답
+{ success: true, data: [...] }
+
+// 형태 2: 직접 배열
+[...]
+
+// 형태 3: 빈 객체 또는 null
+{}
+null
+```
+
+### 해결 3: 방어적 배열 처리
+
+```typescript
+// lib/services/postService.ts
+getLikedPosts: async (userId: number, page = 0, size = 20): Promise<Post[]> => {
+  const response = await apiClient.get(
+    `/posts/likes/me?currentUserId=${userId}&page=${page}&size=${size}`
+  );
+
+  // ✅ 응답이 { success, data } 형태인지 확인
+  if (response.data.success && response.data.data) {
+    return Array.isArray(response.data.data) ? response.data.data : [];
+  }
+
+  // ✅ 배열로 직접 반환되는 경우
+  return Array.isArray(response.data) ? response.data : [];
+},
+
+// lib/services/scrapService.ts
+getScrapsInFolder: async (folderId: number, currentUserId: number): Promise<PostScrap[]> => {
+  const response = await apiClient.get(`/posts/scrap-folders/${folderId}/scraps`, {
+    params: { currentUserId },
+  });
+
+  // ✅ 동일한 방어적 처리
+  if (response.data.success && response.data.data) {
+    return Array.isArray(response.data.data) ? response.data.data : [];
+  }
+
+  return Array.isArray(response.data) ? response.data : [];
+},
+
+getMyFolders: async (currentUserId: number): Promise<ScrapFolder[]> => {
+  const response = await apiClient.get('/scrap-folders/me', {
+    params: { currentUserId },
+  });
+
+  // ✅ 폴더 목록도 동일하게 처리
+  if (response.data.success && response.data.data) {
+    return Array.isArray(response.data.data) ? response.data.data : [];
+  }
+
+  return Array.isArray(response.data) ? response.data : [];
+},
+```
+
+---
+
+### 문제 4: Point 타입 불일치
+
+**현상**:
+- Ranking 페이지에서 레벨 표시 오류
+- `ranking.level`이 undefined
+
+### 원인
+백엔드 API 응답 구조와 프론트엔드 타입 정의 불일치
+
+**백엔드 실제 응답**:
+```json
+{
+  "totalPoints": 150,
+  "currentLevel": "LEVEL_2",        // ← 이 필드 사용
+  "levelDisplayName": "일반",       // ← 표시용 이름
+  "levelNumber": 2                   // ← 숫자로도 제공
+}
+```
+
+**잘못된 타입 정의**:
+```typescript
+// lib/types/point.ts (이전)
+export interface PointInfo {
+  totalPoints: number;
+  level: PointLevel;  // ❌ "GOLD", "SILVER" 같은 enum 가정
+  // ...
+}
+```
+
+### 해결 4: 백엔드 응답 구조에 맞게 타입 수정
+
+```typescript
+// lib/types/point.ts
+export interface PointInfo {
+  id: number;
+  userId: number;
+  totalPoints: number;
+  availablePoints: number;
+  currentLevel: string;        // ✅ "LEVEL_1", "LEVEL_2", ...
+  levelDisplayName: string;    // ✅ "초보", "일반", "고급", ...
+  levelNumber: number;         // ✅ 1, 2, 3, 4, 5
+  pointsToNextLevel: number;
+  // ...
+}
+
+export interface PointRanking {
+  rank: number;
+  user: {
+    id: number;
+    username: string;
+    nickname: string;
+  };
+  totalPoints: number;
+  currentLevel: string;        // ✅ "LEVEL_1", "LEVEL_2", ...
+  levelDisplayName: string;    // ✅ "초보", "일반", ...
+}
+```
+
+**Ranking 페이지 수정**:
+```typescript
+// app/(main)/ranking/page.tsx
+const getLevelColor = (levelNumber: number) => {
+  if (levelNumber >= 5) return 'text-blue-400';    // 마스터
+  if (levelNumber >= 4) return 'text-purple-400';  // 전문가
+  if (levelNumber >= 3) return 'text-yellow-500';  // 고급
+  if (levelNumber >= 2) return 'text-gray-400';    // 일반
+  return 'text-orange-600';                         // 초보
+};
+
+// 레벨 가이드
+const levels = [
+  { level: 1, name: '초보', points: '0~99', color: 'text-orange-600' },
+  { level: 2, name: '일반', points: '100~499', color: 'text-gray-400' },
+  { level: 3, name: '고급', points: '500~1,999', color: 'text-yellow-500' },
+  { level: 4, name: '전문가', points: '2,000~4,999', color: 'text-purple-400' },
+  { level: 5, name: '마스터', points: '5,000+', color: 'text-blue-400' },
+];
+
+// 랭킹 렌더링
+{rankings.map((ranking) => (
+  <div>
+    <span className={getLevelColor(parseInt(ranking.currentLevel.replace('LEVEL_', '')))}>
+      {ranking.levelDisplayName}
+    </span>
+  </div>
+))}
+```
+
+---
+
+### 학습 포인트
+
+#### 1. Zustand Persist 하이드레이션
+```typescript
+// 하이드레이션 완료 추적 패턴
+persist(
+  (set, get) => ({
+    hasHydrated: false,
+    setHasHydrated: (state) => set({ hasHydrated: state }),
+  }),
+  {
+    onRehydrateStorage: () => (state) => {
+      state?.setHasHydrated(true);  // localStorage 복원 완료 시 호출
+    },
+  }
+)
+
+// 사용 시 하이드레이션 대기
+const { isLoading, hasHydrated } = useAuthStore();
+const actuallyLoading = isLoading || !hasHydrated;
+```
+
+#### 2. 백엔드 API 파라미터 패턴
+```typescript
+// GET 요청 - params 옵션 사용
+apiClient.get('/endpoint', {
+  params: { currentUserId: 1, page: 0 }
+});
+// → /endpoint?currentUserId=1&page=0
+
+// POST/PUT 요청 - 세 번째 인자로 params
+apiClient.post('/endpoint', data, {
+  params: { currentUserId: 1 }
+});
+// → /endpoint?currentUserId=1 + body: data
+
+// DELETE 요청 - 두 번째 인자로 params
+apiClient.delete('/endpoint', {
+  params: { currentUserId: 1 }
+});
+```
+
+#### 3. 방어적 배열 처리 패턴
+```typescript
+// API 응답이 다양한 형태일 수 있으므로 항상 검증
+const getData = async (): Promise<Item[]> => {
+  const response = await apiClient.get('/endpoint');
+
+  // 1. 래핑된 응답 확인
+  if (response.data.success && response.data.data) {
+    return Array.isArray(response.data.data) ? response.data.data : [];
+  }
+
+  // 2. 직접 배열 확인
+  return Array.isArray(response.data) ? response.data : [];
+};
+```
+
+#### 4. Phase 5 구현 체크리스트
+- [ ] 타입 정의: User, Point, Scrap 관련 인터페이스
+- [ ] API 서비스: currentUserId 파라미터 추가
+- [ ] 하이드레이션: Zustand persist onRehydrateStorage 설정
+- [ ] 방어적 처리: 배열 응답 검증
+- [ ] 백엔드 응답 구조 확인: DOCKER_TEST_GUIDE.md 참조
+
+#### 5. 디버깅 체크 순서
+```
+1. 콘솔 에러 확인 → axios 에러인지, 렌더링 에러인지
+2. Network 탭 → API 요청/응답 확인
+3. 백엔드 문서 → 필수 파라미터, 응답 구조 확인
+4. 타입 정의 → 실제 응답과 일치하는지 검증
+5. 방어적 처리 → null/undefined/빈 배열 대응
+```
+
+---
+
+## 9. Phase 6 레이아웃 구현 - 배열 메서드 에러
+
+### 문제
+- 메인 화면(홈페이지)과 Sidebar에서 `popular.slice is not a function` 에러 발생
+- 인기 게시글/트렌딩 게시글 로딩 실패
+
+### 원인
+`getPopularPosts`와 `getTrendingPosts` API 메서드가 배열이 아닌 값을 반환
+
+**문제가 있던 코드**:
+```typescript
+// lib/services/postService.ts
+getPopularPosts: async (limit = 10): Promise<Post[]> => {
+  const response = await apiClient.get<ApiResponse<Post[]>>(`/posts/popular?limit=${limit}`);
+  return response.data.data;  // ❌ 항상 배열이라고 가정
+},
+
+// components/layout/Sidebar.tsx
+const [popular, trending] = await Promise.all([
+  postService.getPopularPosts(5),
+  postService.getTrendingPosts(7),
+]);
+
+setPopularPosts(popular.slice(0, 5));  // ❌ popular가 배열이 아니면 에러
+```
+
+### 해결
+Phase 5에서 사용한 방어적 배열 처리 패턴을 적용
+
+```typescript
+// lib/services/postService.ts
+getPopularPosts: async (limit = 10): Promise<Post[]> => {
+  const response = await apiClient.get(`/posts/popular?limit=${limit}`);
+
+  // ✅ 응답이 { success, data } 형태인지 확인
+  if (response.data.success && response.data.data) {
+    return Array.isArray(response.data.data) ? response.data.data : [];
+  }
+
+  // ✅ 배열로 직접 반환되는 경우
+  return Array.isArray(response.data) ? response.data : [];
+},
+
+getTrendingPosts: async (days = 7): Promise<Post[]> => {
+  const response = await apiClient.get(`/posts/trending?days=${days}`);
+
+  // ✅ 동일한 패턴 적용
+  if (response.data.success && response.data.data) {
+    return Array.isArray(response.data.data) ? response.data.data : [];
+  }
+
+  return Array.isArray(response.data) ? response.data : [];
+},
+```
+
+**컴포넌트에서 이중 방어**:
+```typescript
+// components/layout/Sidebar.tsx
+const [popular, trending] = await Promise.all([
+  postService.getPopularPosts(5),
+  postService.getTrendingPosts(7),
+]);
+
+// ✅ 배열인지 확인 후 slice
+setPopularPosts(Array.isArray(popular) ? popular.slice(0, 5) : []);
+setTrendingPosts(Array.isArray(trending) ? trending.slice(0, 5) : []);
+
+// app/page.tsx (홈페이지)
+setPopularPosts(Array.isArray(popular) ? popular : []);
+setTrendingPosts(Array.isArray(trending) ? trending : []);
+```
+
+### 학습 포인트
+
+#### 1. 일관된 방어적 프로그래밍
+```typescript
+// 모든 배열 반환 API 메서드에 동일한 패턴 적용
+const getData = async (): Promise<Item[]> => {
+  const response = await apiClient.get('/endpoint');
+
+  // 1. 래핑된 응답 확인
+  if (response.data.success && response.data.data) {
+    return Array.isArray(response.data.data) ? response.data.data : [];
+  }
+
+  // 2. 직접 배열 확인
+  return Array.isArray(response.data) ? response.data : [];
+};
+```
+
+#### 2. 이중 방어 전략
+서비스 레이어와 컴포넌트 레이어 모두에서 검증:
+```typescript
+// 서비스: API 응답을 배열로 보장
+const posts = await postService.getPosts();  // 항상 배열 반환
+
+// 컴포넌트: 추가 방어
+setPosts(Array.isArray(posts) ? posts : []);
+```
+
+#### 3. TypeScript 타입과 런타임 검증의 차이
+```typescript
+// TypeScript는 타입만 체크, 런타임 값은 검증 안 함
+async function getData(): Promise<Post[]> {
+  return response.data;  // TypeScript: OK, 런타임: 배열이 아닐 수 있음
+}
+
+// 런타임 검증 필수
+return Array.isArray(response.data) ? response.data : [];
+```
+
+#### 4. 적용 대상 API 메서드
+Phase 5-6에서 방어적 처리를 적용한 메서드들:
+- `pointService.getRanking()` - 랭킹 목록
+- `postService.getLikedPosts()` - 좋아요한 게시글
+- `postService.getScrappedPosts()` - 스크랩한 게시글
+- `scrapService.getMyFolders()` - 스크랩 폴더 목록
+- `scrapService.getScrapsInFolder()` - 폴더 내 스크랩
+- `postService.getPopularPosts()` - 인기 게시글
+- `postService.getTrendingPosts()` - 트렌딩 게시글
+
+---
+
 ## 참고 파일
 - `lib/services/authService.ts` - 인증 API 서비스
 - `lib/store/authStore.ts` - Zustand 인증 상태 관리
+- `lib/hooks/useAuth.ts` - 인증 훅
 - `app/(main)/posts/create/page.tsx` - 게시글 작성 페이지
 - `app/(main)/posts/[id]/page.tsx` - 게시글 상세 페이지
+- `app/(main)/profile/page.tsx` - 프로필 페이지 (Phase 5)
+- `app/(main)/ranking/page.tsx` - 랭킹 페이지 (Phase 5)
+- `app/(main)/scraps/page.tsx` - 스크랩 폴더 페이지 (Phase 5)
+- `app/page.tsx` - 홈페이지 (Phase 6)
 - `lib/services/postService.ts` - 게시글 API 서비스
+- `lib/services/scrapService.ts` - 스크랩 API 서비스 (Phase 5)
+- `lib/services/pointService.ts` - 포인트 API 서비스 (Phase 5)
 - `lib/services/attachmentService.ts` - 첨부파일 API 서비스
 - `lib/types/post.ts` - 게시글 타입 정의
+- `lib/types/user.ts` - 사용자 타입 정의 (Phase 5)
+- `lib/types/point.ts` - 포인트 타입 정의 (Phase 5)
+- `lib/types/scrap.ts` - 스크랩 타입 정의 (Phase 5)
 - `lib/types/attachment.ts` - 첨부파일 타입 정의
 - `components/features/comment/CommentItem.tsx` - 댓글 아이템 컴포넌트
 - `components/features/comment/CommentList.tsx` - 댓글 목록 컴포넌트
+- `components/layout/Header.tsx` - 헤더 컴포넌트 (Phase 6)
+- `components/layout/Footer.tsx` - 푸터 컴포넌트 (Phase 6)
+- `components/layout/Sidebar.tsx` - 사이드바 컴포넌트 (Phase 6)

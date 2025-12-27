@@ -35,13 +35,27 @@ export const postService = {
   },
 
   getPopularPosts: async (limit = 10): Promise<Post[]> => {
-    const response = await apiClient.get<ApiResponse<Post[]>>(`/posts/popular?limit=${limit}`);
-    return response.data.data;
+    const response = await apiClient.get(`/posts/popular?limit=${limit}`);
+
+    // 응답이 { success, data } 형태인지 확인
+    if (response.data.success && response.data.data) {
+      return Array.isArray(response.data.data) ? response.data.data : [];
+    }
+
+    // 배열로 직접 반환되는 경우
+    return Array.isArray(response.data) ? response.data : [];
   },
 
   getTrendingPosts: async (days = 7): Promise<Post[]> => {
-    const response = await apiClient.get<ApiResponse<Post[]>>(`/posts/trending?days=${days}`);
-    return response.data.data;
+    const response = await apiClient.get(`/posts/trending?days=${days}`);
+
+    // 응답이 { success, data } 형태인지 확인
+    if (response.data.success && response.data.data) {
+      return Array.isArray(response.data.data) ? response.data.data : [];
+    }
+
+    // 배열로 직접 반환되는 경우
+    return Array.isArray(response.data) ? response.data : [];
   },
 
   createPost: async (data: PostCreateRequest, currentUserId: number): Promise<Post> => {
