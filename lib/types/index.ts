@@ -5,3 +5,4 @@ export * from './engagement';
 export * from './point';
 export * from './attachment';
 export * from './scrap';
+export * from './notification';

@@ -1188,3 +1188,146 @@ Phase 5-6에서 방어적 처리를 적용한 메서드들:
 - `components/layout/Header.tsx` - 헤더 컴포넌트 (Phase 6)
 - `components/layout/Footer.tsx` - 푸터 컴포넌트 (Phase 6)
 - `components/layout/Sidebar.tsx` - 사이드바 컴포넌트 (Phase 6)
+
+---
+
+## 10. Phase 8 알림 시스템 - 백엔드 API 미구현 에러
+
+### 문제
+**날짜**: 2025-12-27
+
+Phase 8 알림 시스템 구현 후, 페이지 로드 시 콘솔에 500 에러 발생:
+
+```
+AxiosError: Request failed with status code 500
+at lib/services/notificationService.ts (20:22)
+```
+
+알림 API를 호출하려 하지만 백엔드에 아직 구현되지 않아 에러 발생
+
+### 원인
+Phase 8에서 프론트엔드 알림 시스템을 먼저 구현했지만, 백엔드 API가 아직 준비되지 않음:
+
+```typescript
+// lib/services/notificationService.ts
+getUnreadCount: async (): Promise<number> => {
+  // 백엔드에 /notifications/me/unread-count 엔드포인트가 없음
+  const response = await apiClient.get<ApiResponse<{ count: number }>>(
+    '/notifications/me/unread-count'
+  );
+  return response.data.data.count;
+}
+```
+
+**에러 발생 위치**:
+- `NotificationBell.tsx`: 컴포넌트 마운트 시 `loadUnreadCount()` 호출
+- 30초마다 자동으로 미읽은 알림 수를 업데이트하려고 시도
+- 백엔드 API가 없어 500 에러 발생
+
+### 해결
+
+백엔드 API가 준비되지 않은 경우를 대비해 **Graceful Degradation** 적용:
+
+#### 1. NotificationBell.tsx 에러 핸들링
+
+```typescript
+const loadUnreadCount = async () => {
+  try {
+    const count = await notificationService.getUnreadCount();
+    setUnreadCount(count);
+  } catch (err) {
+    // 백엔드 API가 아직 구현되지 않은 경우 조용히 실패
+    console.warn('Notification API not available yet:', err);
+    setUnreadCount(0);
+  }
+};
+```
+
+**변경 사항**:
+- `console.error` → `console.warn`: 에러 레벨을 경고로 낮춤
+- 에러 발생 시 `unreadCount`를 0으로 설정
+- UI는 정상적으로 표시되지만 알림 Badge는 나타나지 않음
+
+#### 2. NotificationList.tsx 에러 핸들링
+
+```typescript
+const loadNotifications = async () => {
+  try {
+    setLoading(true);
+    const response = await notificationService.getNotifications(0, 10);
+    setNotifications(Array.isArray(response.content) ? response.content : []);
+  } catch (err) {
+    // 백엔드 API가 아직 구현되지 않은 경우 조용히 실패
+    console.warn('Notification API not available yet:', err);
+    setNotifications([]);
+  } finally {
+    setLoading(false);
+  }
+};
+```
+
+**변경 사항**:
+- 에러 발생 시 빈 배열로 설정
+- "알림이 없습니다" 메시지 표시
+- 사용자는 API 에러를 인지하지 못하고 단순히 알림이 없는 것으로 보임
+
+#### 3. 기타 에러 핸들링
+
+`handleMarkAsRead`, `handleMarkAllAsRead`, `handleDelete` 메서드도 동일하게 `console.warn`으로 변경
+
+### 학습 포인트
+
+#### 1. **Progressive Enhancement vs Graceful Degradation**
+
+- **Progressive Enhancement**: 기본 기능을 먼저 구현하고 점진적으로 향상
+- **Graceful Degradation**: 모든 기능을 구현하되, 실패 시 우아하게 저하
+
+알림 시스템은 Graceful Degradation 접근:
+- 알림 기능이 전부 구현되어 있음
+- 백엔드 API가 없어도 앱이 정상 작동
+- API가 준비되면 자동으로 동작
+
+#### 2. **에러 레벨 구분**
+
+```typescript
+console.error()  // 🔴 반드시 수정해야 하는 에러
+console.warn()   // 🟡 알아야 하지만 앱은 계속 작동
+console.log()    // ⚪ 일반 로그
+console.info()   // 🔵 정보성 메시지
+```
+
+백엔드 미구현은 "알아야 하지만 앱은 계속 작동"하므로 `warn` 적합
+
+#### 3. **Optional Features 패턴**
+
+알림 시스템처럼 선택적 기능은 다음 패턴으로 구현:
+
+```typescript
+try {
+  const data = await optionalFeatureAPI();
+  setData(data);
+} catch (err) {
+  console.warn('Optional feature not available:', err);
+  setData(defaultValue); // 기본값 사용
+}
+```
+
+#### 4. **사용자 경험 우선**
+
+에러가 발생해도:
+- UI가 깨지지 않음
+- 에러 메시지가 사용자에게 노출되지 않음
+- 알림 벨 아이콘은 표시되지만 Badge만 없음
+- 클릭하면 "알림이 없습니다" 표시
+
+### 향후 계획
+
+백엔드 알림 API가 구현되면:
+1. 에러 핸들링 코드는 그대로 유지 (네트워크 에러 대비)
+2. API가 정상 작동하면 자동으로 알림 기능 활성화
+3. 추가 코드 수정 불필요
+
+### 참고 파일
+- `components/features/notification/NotificationBell.tsx` - 알림 벨 컴포넌트
+- `components/features/notification/NotificationList.tsx` - 알림 목록 컴포넌트
+- `lib/services/notificationService.ts` - 알림 API 서비스

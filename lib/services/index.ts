@@ -6,3 +6,4 @@ export * from './scrapService';
 export * from './pointService';
 export * from './attachmentService';
 export * from './userService';
+export * from './notificationService';

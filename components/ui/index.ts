@@ -40,3 +40,6 @@ export type { FormHelperTextProps } from './FormHelperText';
 
 // Loading Components
 export * from './Loading';
+
+// Theme Components
+export { default as ThemeToggle } from './ThemeToggle';

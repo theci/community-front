@@ -877,68 +877,140 @@ interface AuthState {
 
 ---
 
-### 📌 Phase 8: 고급 기능
+### 📌 Phase 8: 고급 기능 ✅
 **목표**: 검색, 필터링, 알림 등 고급 기능 구현
+**상태**: 구현 완료 (2025-12-27)
 
-#### 8.1 고급 검색
-**예상 소요**: 2일
+**구현된 주요 기능**:
+- ✅ 고급 검색 (필터, 하이라이팅, 검색 기록)
+- ✅ 알림 시스템 (Bell, List, Item 컴포넌트)
+- ✅ 다크 모드 (테마 스토어, 토글 버튼)
 
-**작업 내용**:
+#### 8.1 고급 검색 ✅
+**완료 날짜**: 2025-12-27
+
+**구현된 기능**:
 ```typescript
-// app/(main)/search/page.tsx
-- 통합 검색 페이지
-- 필터 옵션 (카테고리, 태그, 날짜, 작성자)
-- 검색 결과 하이라이팅
-- 검색 기록
+✅ app/(main)/search/page.tsx
+  - 통합 검색 페이지 구현
+  - 검색어 입력 및 실시간 검색
+  - 필터 옵션 (카테고리, 정렬, 날짜 범위)
+  - 검색 결과 하이라이팅 (highlightText 함수)
+  - 검색 기록 관리 (LocalStorage, 최대 10개)
+  - 최근 검색어 버튼 UI
+  - 빈 상태 처리
+  - 로딩 스켈레톤
+  - URL 파라미터 동기화
 ```
 
-**API 엔드포인트**:
-- `GET /api/v1/posts/search?keyword={keyword}&category={cat}&startDate={date}&endDate={date}`
+**주요 기능**:
+- 검색 기록 자동 저장 및 삭제
+- 검색어 하이라이팅 (Mark 태그)
+- 카테고리별 필터링
+- 정렬 옵션 (최신순, 인기순, 조회순)
+- 날짜 범위 필터
+- 반응형 UI
 
 **체크리스트**:
-- [ ] 검색 입력 및 필터 UI
-- [ ] 검색 결과 표시
-- [ ] 하이라이팅
-- [ ] 검색 기록 로컬스토리지 저장
+- [x] 검색 입력 및 필터 UI
+- [x] 검색 결과 표시
+- [x] 하이라이팅
+- [x] 검색 기록 로컬스토리지 저장
 
-#### 8.2 알림 시스템
-**예상 소요**: 2일
+#### 8.2 알림 시스템 ✅
+**완료 날짜**: 2025-12-27
 
-**작업 내용**:
+**구현된 컴포넌트**:
 ```typescript
-// components/features/notification/
-- NotificationBell.tsx: 알림 아이콘
-- NotificationList.tsx: 알림 목록
-- NotificationItem.tsx: 개별 알림
+✅ lib/types/notification.ts
+  - NotificationType (7가지 타입)
+  - Notification 인터페이스
+  - NotificationListResponse
+
+✅ lib/services/notificationService.ts
+  - getNotifications (페이지네이션)
+  - getUnreadCount (미읽은 알림 수)
+  - markAsRead (개별 읽음 처리)
+  - markAllAsRead (전체 읽음 처리)
+  - deleteNotification (삭제)
+
+✅ components/features/notification/NotificationBell.tsx
+  - 알림 아이콘 버튼
+  - 미읽은 알림 Badge
+  - 드롭다운 토글
+  - 30초마다 자동 새로고침
+  - Outside click 처리
+
+✅ components/features/notification/NotificationList.tsx
+  - 알림 목록 표시
+  - 모두 읽음 처리
+  - 로딩 상태
+  - 빈 상태 UI
+
+✅ components/features/notification/NotificationItem.tsx
+  - 알림 타입별 아이콘 및 색상
+  - 읽음/안읽음 상태 표시
+  - 시간 경과 표시 (방금 전, N분 전, N시간 전...)
+  - 관련 페이지로 이동
+  - 개별 삭제 기능
 ```
 
-**API 엔드포인트**:
-- `GET /api/v1/notifications/me`
-- `PUT /api/v1/notifications/{notificationId}/read`
-- `PUT /api/v1/notifications/read-all`
+**알림 타입**:
+- COMMENT, REPLY (댓글/답글)
+- LIKE (좋아요)
+- SCRAP (스크랩)
+- FOLLOW (팔로우)
+- MENTION (멘션)
+- SYSTEM (시스템)
 
 **체크리스트**:
-- [ ] 알림 아이콘 및 배지
-- [ ] 알림 드롭다운
-- [ ] 알림 읽음 처리
-- [ ] 실시간 알림 (WebSocket - 선택)
+- [x] 알림 아이콘 및 배지
+- [x] 알림 드롭다운
+- [x] 알림 읽음 처리
+- [ ] 실시간 알림 (WebSocket - 향후 개선)
 
-#### 8.3 다크 모드
-**예상 소요**: 1일
+#### 8.3 다크 모드 ✅
+**완료 날짜**: 2025-12-27
 
-**작업 내용**:
+**구현된 기능**:
 ```typescript
-// lib/store/themeStore.ts
-- 테마 상태 관리
-- 시스템 테마 감지
-- 토글 기능
+✅ lib/store/themeStore.ts
+  - Zustand 스토어로 테마 상태 관리
+  - Theme 타입: 'light' | 'dark' | 'system'
+  - 시스템 테마 자동 감지
+  - LocalStorage 영속성 (persist middleware)
+  - 시스템 테마 변경 리스너
+  - CSS 클래스 자동 적용
+
+✅ components/ui/ThemeToggle.tsx
+  - Sun/Moon 아이콘 토글 버튼
+  - 현재 테마 표시
+  - 클릭으로 테마 전환
+  - 접근성 지원 (aria-label)
+
+✅ tailwind.config.ts
+  - darkMode: 'class' 활성화
+  - dark: 클래스 기반 다크 모드
 ```
 
+**주요 기능**:
+- Light/Dark 모드 전환
+- 시스템 테마 감지 및 자동 적용
+- LocalStorage에 설정 저장
+- 시스템 설정 변경 감지
+- 페이지 새로고침 시 테마 유지
+
 **체크리스트**:
-- [ ] 테마 스토어
-- [ ] CSS 변수 전환
-- [ ] 테마 토글 버튼
-- [ ] 로컬스토리지 저장
+- [x] 테마 스토어
+- [x] CSS 변수 전환
+- [x] 테마 토글 버튼
+- [x] 로컬스토리지 저장
+
+**구현 시 주요 개선사항**:
+1. **통합 검색**: 검색 기록 관리, 하이라이팅, 다양한 필터 옵션
+2. **알림 시스템**: 완전한 알림 워크플로우, 7가지 알림 타입, 자동 업데이트
+3. **다크 모드**: 시스템 테마 연동, 영속성, 접근성
+4. **Header 통합**: ThemeToggle, NotificationBell이 Header에 통합되어 즉시 사용 가능
 
 ---
 
@@ -1613,12 +1685,12 @@ chore: 빌드, 설정 변경
 - [x] Phase 5: 사용자 프로필 및 포인트
 - [x] Phase 6: 레이아웃 및 내비게이션
 - [x] Phase 7: UI 컴포넌트 라이브러리
+- [x] Phase 8: 고급 기능
 
 ### 현재 진행 중
 - 없음
 
 ### 예정된 작업
-- [ ] Phase 8: 고급 기능
 - [ ] Phase 9: 관리자 기능
 - [ ] Phase 10: 성능 최적화 및 테스트
 - [ ] Phase 11: 배포 및 CI/CD

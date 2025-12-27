@@ -4,6 +4,8 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/hooks';
+import { NotificationBell } from '@/components/features/notification';
+import { ThemeToggle } from '@/components/ui';
 
 export default function Header() {
   const router = useRouter();
@@ -100,7 +102,14 @@ export default function Header() {
           {/* 사용자 메뉴 */}
           <div className="hidden md:flex items-center space-x-4">
             {isAuthenticated ? (
-              <div className="relative">
+              <>
+                {/* 테마 토글 */}
+                <ThemeToggle />
+
+                {/* 알림 벨 */}
+                <NotificationBell />
+
+                <div className="relative">
                 <button
                   onClick={() => setShowUserMenu(!showUserMenu)}
                   className="flex items-center space-x-2 text-gray-700 hover:text-blue-600 focus:outline-none"
@@ -150,7 +159,8 @@ export default function Header() {
                     </div>
                   </>
                 )}
-              </div>
+                </div>
+              </>
             ) : (
               <div className="flex items-center space-x-3">
                 <Link
