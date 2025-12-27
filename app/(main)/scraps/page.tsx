@@ -24,6 +24,11 @@ export default function ScrapsPage() {
   const [folderName, setFolderName] = useState('');
   const [folderDescription, setFolderDescription] = useState('');
 
+  // 페이지 마운트 시 스크롤을 맨 위로
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
       router.push('/login?redirect=/scraps');
@@ -295,20 +300,30 @@ export default function ScrapsPage() {
                     {scraps.map((scrap) => (
                       <Card key={scrap.id} className="hover:shadow-md transition-shadow">
                         <div className="flex items-start justify-between">
-                          <Link
-                            href={`/posts/${scrap.postId}`}
-                            className="flex-1"
-                          >
-                            <h3 className="text-lg font-semibold text-gray-900 mb-2 hover:text-blue-600">
-                              {scrap.post?.title || '제목 없음'}
-                            </h3>
+                          <div className="flex-1">
+                            {scrap.postId ? (
+                              <Link href={`/posts/${scrap.postId}`}>
+                                <h3 className="text-lg font-semibold text-gray-900 mb-2 hover:text-blue-600">
+                                  {scrap.post?.title || '제목 없음'}
+                                </h3>
+                              </Link>
+                            ) : (
+                              <div>
+                                <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                                  {scrap.post?.title || '제목 없음'}
+                                </h3>
+                                <p className="text-sm text-red-600 mb-2">
+                                  ⚠️ 백엔드 버그: 게시글 정보가 누락되었습니다
+                                </p>
+                              </div>
+                            )}
                             {scrap.post?.summary && (
                               <p className="text-gray-600 mb-3 line-clamp-2">
                                 {scrap.post.summary}
                               </p>
                             )}
                             <div className="flex items-center gap-4 text-sm text-gray-500">
-                              {scrap.post && (
+                              {scrap.post ? (
                                 <>
                                   <span>👁️ {scrap.post.viewCount}</span>
                                   <span>❤️ {scrap.post.likeCount}</span>
@@ -317,9 +332,13 @@ export default function ScrapsPage() {
                                     {new Date(scrap.createdAt).toLocaleDateString()}
                                   </span>
                                 </>
+                              ) : (
+                                <span>
+                                  스크랩 날짜: {new Date(scrap.createdAt).toLocaleDateString()}
+                                </span>
                               )}
                             </div>
-                          </Link>
+                          </div>
                           <button
                             onClick={() => handleRemoveScrap(scrap)}
                             className="ml-4 text-gray-400 hover:text-red-600 transition-colors"

@@ -71,18 +71,20 @@ export default function PostDetailPage() {
       setScraped(status.scraped);
     } catch (err) {
       console.error('Failed to load scrap status:', err);
+      // 에러 시 기본값은 false
+      setScraped(false);
     }
   };
 
   const handleLike = async () => {
-    if (!isAuthenticated) {
+    if (!isAuthenticated || !user?.id) {
       alert('로그인이 필요합니다.');
       router.push(`/login?redirect=/posts/${postId}`);
       return;
     }
 
     try {
-      const result = await postService.toggleLike(postId);
+      const result = await postService.toggleLike(postId, user.id);
       setLiked(result.liked);
       setLikeCount(result.likeCount);
     } catch (err: any) {
@@ -92,19 +94,34 @@ export default function PostDetailPage() {
   };
 
   const handleScrap = async () => {
-    if (!isAuthenticated) {
+    if (!isAuthenticated || !user?.id) {
       alert('로그인이 필요합니다.');
       router.push(`/login?redirect=/posts/${postId}`);
       return;
     }
 
     try {
-      const result = await postService.toggleScrap(postId);
+      // 현재 상태를 기준으로 적절한 API 호출
+      const result = await postService.toggleScrap(postId, user.id, scraped);
       setScraped(result.scraped);
+
+      // 성공 후 백엔드 상태와 동기화
+      await loadScrapStatus();
+
       alert(result.scraped ? '스크랩했습니다.' : '스크랩을 취소했습니다.');
     } catch (err: any) {
       console.error('Failed to toggle scrap:', err);
-      alert(err.response?.data?.message || '스크랩 처리에 실패했습니다.');
+
+      // "이미 스크랩한 게시글입니다" 에러 처리
+      if (err.response?.data?.errorCode === 'INVALID_STATE') {
+        // 백엔드와 프론트엔드 상태가 불일치 - 백엔드 상태를 신뢰
+        await loadScrapStatus();
+        alert('상태를 동기화했습니다. 다시 시도해주세요.');
+      } else {
+        alert(err.response?.data?.message || '스크랩 처리에 실패했습니다.');
+        // 에러 발생 시에도 상태 다시 로드하여 동기화
+        await loadScrapStatus();
+      }
     }
   };
 

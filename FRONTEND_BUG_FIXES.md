@@ -1331,3 +1331,359 @@ try {
 - `components/features/notification/NotificationBell.tsx` - 알림 벨 컴포넌트
 - `components/features/notification/NotificationList.tsx` - 알림 목록 컴포넌트
 - `lib/services/notificationService.ts` - 알림 API 서비스
+
+---
+
+## 11. 좋아요/스크랩 기능 - currentUserId 파라미터 누락 에러
+
+### 문제
+**날짜**: 2025-12-27
+
+게시글 상세 페이지에서 좋아요 버튼 클릭 시 500 에러 발생:
+
+```
+AxiosError: Request failed with status code 500
+at lib/services/postService.ts (81:22)
+POST http://54.180.251.210:8080/api/v1/posts/{postId}/like
+```
+
+### 원인
+백엔드 API는 정상적으로 작동하지만, 프론트엔드에서 필수 파라미터 `currentUserId`를 누락하고 호출함
+
+**백엔드 API 요구사항** (DOCKER_TEST_GUIDE.md):
+```
+POST /api/v1/posts/{postId}/like?currentUserId={userId}
+POST /api/v1/posts/{postId}/scrap?currentUserId={userId}
+```
+
+**프론트엔드 기존 코드** (잘못된 코드):
+```typescript
+// lib/services/postService.ts (잘못된 코드)
+toggleLike: async (postId: number) => {
+  // ❌ currentUserId 파라미터 없음!
+  const response = await apiClient.post(`/posts/${postId}/like`);
+  return response.data.data;
+}
+
+toggleScrap: async (postId: number, folderId?: number) => {
+  // ❌ currentUserId 파라미터 없음!
+  const response = await apiClient.post(`/posts/${postId}/scrap`, { folderId });
+  return response.data.data;
+}
+```
+
+프론트엔드가 필수 파라미터 없이 호출 → 백엔드가 400 또는 500 에러 반환
+
+### 해결
+
+#### 1. postService.ts 수정 - currentUserId 파라미터 추가
+
+```typescript
+// lib/services/postService.ts (수정된 코드)
+toggleLike: async (postId: number, currentUserId: number): Promise<{ liked: boolean; likeCount: number }> => {
+  // ✅ currentUserId 파라미터 추가
+  const response = await apiClient.post<ApiResponse<{ liked: boolean; likeCount: number }>>(
+    `/posts/${postId}/like?currentUserId=${currentUserId}`
+  );
+  return response.data.data;
+},
+
+toggleScrap: async (postId: number, currentUserId: number, folderId?: number): Promise<{ scraped: boolean }> => {
+  // ✅ currentUserId 파라미터 추가
+  const response = await apiClient.post<ApiResponse<{ scraped: boolean }>>(
+    `/posts/${postId}/scrap?currentUserId=${currentUserId}`,
+    { folderId }
+  );
+  return response.data.data;
+},
+```
+
+**변경 사항**:
+- 함수 시그니처에 `currentUserId: number` 파라미터 추가
+- API 호출 시 쿼리 파라미터로 `currentUserId` 전달
+- TypeScript 타입 체크로 누락 방지
+
+#### 2. 게시글 상세 페이지 수정 - user.id 전달
+
+```typescript
+// app/(main)/posts/[id]/page.tsx (수정된 코드)
+const handleLike = async () => {
+  if (!isAuthenticated || !user?.id) {
+    alert('로그인이 필요합니다.');
+    router.push(`/login?redirect=/posts/${postId}`);
+    return;
+  }
+
+  try {
+    // ✅ user.id를 currentUserId로 전달
+    const result = await postService.toggleLike(postId, user.id);
+    setLiked(result.liked);
+    setLikeCount(result.likeCount);
+  } catch (err: any) {
+    console.error('Failed to toggle like:', err);
+    alert(err.response?.data?.message || '좋아요 처리에 실패했습니다.');
+  }
+};
+
+const handleScrap = async () => {
+  if (!isAuthenticated || !user?.id) {
+    alert('로그인이 필요합니다.');
+    router.push(`/login?redirect=/posts/${postId}`);
+    return;
+  }
+
+  try {
+    // ✅ user.id를 currentUserId로 전달
+    const result = await postService.toggleScrap(postId, user.id);
+    setScraped(result.scraped);
+    alert(result.scraped ? '스크랩했습니다.' : '스크랩을 취소했습니다.');
+  } catch (err: any) {
+    console.error('Failed to toggle scrap:', err);
+    alert(err.response?.data?.message || '스크랩 처리에 실패했습니다.');
+  }
+};
+```
+
+**변경 사항**:
+- `user?.id` null 체크 추가
+- `postService.toggleLike(postId, user.id)` - user.id 전달
+- `postService.toggleScrap(postId, user.id)` - user.id 전달
+- 불필요한 500 에러 핸들링 제거 (이제 정상 작동)
+
+### 학습 포인트
+
+#### 1. **API 문서 확인의 중요성**
+
+백엔드 API 문서를 정확히 확인해야 함:
+- 필수 파라미터
+- 선택적 파라미터
+- 요청 방식 (GET, POST, etc.)
+- 응답 형식
+
+```typescript
+// DOCKER_TEST_GUIDE.md 확인
+POST /api/v1/posts/{postId}/like?currentUserId={userId}
+                                  ^^^^^^^^^^^^^^^^^^^^
+                                  필수 파라미터!
+```
+
+#### 2. **TypeScript 활용**
+
+파라미터 누락을 컴파일 타임에 잡기:
+
+```typescript
+// ✅ TypeScript가 에러 감지
+toggleLike: async (postId: number, currentUserId: number) => { ... }
+
+// 호출 시
+postService.toggleLike(postId);  // ❌ Error: Expected 2 arguments, but got 1
+postService.toggleLike(postId, user.id);  // ✅ OK
+```
+
+#### 3. **일관성 있는 API 디자인**
+
+다른 API 메서드들도 동일한 패턴 확인:
+- `createPost(data, currentUserId)` ✅
+- `updatePost(postId, data, currentUserId)` ✅
+- `deletePost(postId, currentUserId)` ✅
+- `publishPost(postId, currentUserId)` ✅
+- `toggleLike(postId, currentUserId)` ✅ (수정 완료)
+- `toggleScrap(postId, currentUserId)` ✅ (수정 완료)
+
+모든 mutating 작업에 `currentUserId` 필요
+
+### 향후 계획
+
+1. 다른 API 메서드들도 `currentUserId` 패턴 확인
+2. TypeScript strict mode 활성화로 타입 체크 강화
+3. API 클라이언트 wrapper 함수로 currentUserId 자동 주입 고려
+
+### 추가 수정 사항
+
+**문제**: API는 정상 작동하지만 UI가 업데이트되지 않음
+
+**원인**: 백엔드 응답 프로퍼티 이름과 프론트엔드 기대값 불일치
+
+```typescript
+// 백엔드 응답
+{
+  isLiked: true,
+  totalLikeCount: 1
+}
+
+// 프론트엔드 기대값
+{
+  liked: boolean,
+  likeCount: number
+}
+```
+
+**해결**: postService.ts에서 응답 매핑 추가
+
+```typescript
+toggleLike: async (postId: number, currentUserId: number): Promise<{ liked: boolean; likeCount: number }> => {
+  const response = await apiClient.post<ApiResponse<{ isLiked: boolean; totalLikeCount: number }>>(
+    `/posts/${postId}/like?currentUserId=${currentUserId}`
+  );
+  // 백엔드 응답을 프론트엔드 형식으로 변환
+  return {
+    liked: response.data.data.isLiked,
+    likeCount: response.data.data.totalLikeCount,
+  };
+},
+```
+
+### 추가 수정 사항 2: 스크랩 API 요청 본문 및 토글 로직 에러
+
+**문제 1**: 스크랩 기능 호출 시 검증 에러 발생 (400 Bad Request)
+
+백엔드 API는 요청 본문에 `postId`와 `folderId`를 모두 포함해야 함:
+```json
+{
+  "postId": 1,
+  "folderId": null
+}
+```
+
+프론트엔드는 이 필드들을 보내지 않아서 에러 발생
+
+**문제 2**: 스크랩 버튼을 두 번 클릭하면 400 에러 발생
+
+백엔드는 토글 API가 아니라 **별도의 추가/삭제 엔드포인트**를 제공:
+- **POST** `/api/v1/posts/{postId}/scrap` - 스크랩 추가
+- **DELETE** `/api/v1/posts/{postId}/scrap` - 스크랩 삭제
+
+프론트엔드가 항상 POST만 호출해서 이미 스크랩된 게시글을 다시 추가하려고 시도 → 400 에러
+
+**원인**:
+1. 요청 본문에 필수 필드 `postId` 누락
+2. API를 토글로 잘못 이해하고 구현
+
+**해결**: 컴포넌트의 현재 상태를 신뢰하고 적절한 메서드(POST/DELETE) 호출
+
+```typescript
+// lib/services/postService.ts
+toggleScrap: async (
+  postId: number,
+  currentUserId: number,
+  currentScrapedState: boolean,  // ✅ 현재 상태를 파라미터로 받음
+  folderId?: number
+): Promise<{ scraped: boolean }> => {
+  if (currentScrapedState) {
+    // 이미 스크랩되어 있으면 DELETE로 취소
+    await apiClient.delete(`/posts/${postId}/scrap?currentUserId=${currentUserId}`);
+    return { scraped: false };
+  } else {
+    // 스크랩되어 있지 않으면 POST로 추가
+    const requestBody = {
+      postId,                    // ✅ postId 필수
+      folderId: folderId || null, // ✅ folderId null 허용
+    };
+    await apiClient.post(`/posts/${postId}/scrap?currentUserId=${currentUserId}`, requestBody);
+    return { scraped: true };
+  }
+}
+
+// app/(main)/posts/[id]/page.tsx
+const handleScrap = async () => {
+  try {
+    // ✅ 현재 scraped 상태를 전달
+    const result = await postService.toggleScrap(postId, user.id, scraped);
+    setScraped(result.scraped);
+
+    // ✅ 성공 후 백엔드와 동기화
+    await loadScrapStatus();
+
+    alert(result.scraped ? '스크랩했습니다.' : '스크랩을 취소했습니다.');
+  } catch (err: any) {
+    console.error('Failed to toggle scrap:', err);
+    alert(err.response?.data?.message || '스크랩 처리에 실패했습니다.');
+
+    // ✅ 에러 시에도 상태 동기화
+    await loadScrapStatus();
+  }
+}
+```
+
+**학습 포인트**:
+- **API 엔드포인트 이해**: Toggle API vs 별도 Add/Remove API 구분
+- **상태 신뢰**: API로 상태를 다시 조회하는 대신 컴포넌트의 현재 상태 사용 (race condition 방지)
+- **낙관적 업데이트 + 동기화**: 즉시 UI 업데이트 후 백엔드와 재동기화
+- **백엔드 API 명세 준수**: 요청 본문 형식을 정확히 따라야 함
+- **RESTful 패턴**: POST(생성), DELETE(삭제)를 각각 사용하는 것이 표준
+- **에러 복구**: 에러 발생 시에도 상태를 다시 로드하여 UI와 백엔드 동기화
+
+### 추가 수정 사항 3: 스크랩 상태 API 응답 형식 불일치 (최종 해결)
+
+**문제**: 스크랩 상태가 `undefined`로 설정되어 UI에 반영되지 않음
+
+디버깅 로그:
+```
+getScrapStatus API response: {success: true, data: true, timestamp: '...'}
+Scrap status loaded: true
+Current scraped state before toggle: undefined  // ← 문제!
+```
+
+**원인**: 백엔드와 프론트엔드의 응답 형식 불일치
+
+**백엔드 실제 응답**:
+```json
+{
+  "success": true,
+  "data": true,  // ← 불리언 값만 반환
+  "timestamp": "2025-12-27T15:15:42.281589015"
+}
+```
+
+**프론트엔드 기대 형식**:
+```json
+{
+  "success": true,
+  "data": {
+    "scraped": true  // ← 객체 형태 기대
+  }
+}
+```
+
+**결과적으로 발생한 문제**:
+```typescript
+const status = await getScrapStatus(postId, user.id);
+// status = true (불리언)
+
+setScraped(status.scraped);
+// true.scraped = undefined!
+```
+
+**해결**: 백엔드 응답을 프론트엔드 형식으로 변환
+
+```typescript
+// lib/services/postService.ts
+getScrapStatus: async (postId: number, currentUserId?: number): Promise<{ scraped: boolean }> => {
+  const params = currentUserId ? { currentUserId } : {};
+  const response = await apiClient.get<ApiResponse<boolean>>(`/posts/${postId}/scrap/status`, { params });
+
+  // ✅ 백엔드는 data: true/false (불리언)를 반환
+  // ✅ 프론트엔드는 { scraped: boolean } 형태 필요
+  const scrapedValue = response.data.data;
+  return { scraped: scrapedValue };  // 불리언을 객체로 변환
+}
+```
+
+**동작 확인**:
+```
+getScrapStatus API response: {data: true}
+→ return { scraped: true }
+→ setScraped(status.scraped)  // status.scraped = true ✅
+→ UI에 노란색 버튼 표시 ✅
+```
+
+**학습 포인트**:
+- **응답 형식 검증**: 백엔드 API 실제 응답과 프론트엔드 기대값이 일치하는지 확인
+- **타입 변환 레이어**: 서비스 레이어에서 백엔드 형식을 프론트엔드 형식으로 변환
+- **디버깅 로깅**: console.log로 실제 API 응답을 확인하여 가정과 실제 불일치 발견
+- **TypeScript 한계**: 타입 정의만으로는 런타임 데이터 형식 불일치를 잡을 수 없음
+- **Adapter Pattern**: 서로 다른 인터페이스를 연결하는 어댑터 역할
+
+### 참고 파일
+- `app/(main)/posts/[id]/page.tsx` - 게시글 상세 페이지
+- `lib/services/postService.ts` - 게시글 API 서비스

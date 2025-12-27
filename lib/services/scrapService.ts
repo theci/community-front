@@ -55,9 +55,17 @@ export const scrapService = {
       params: { currentUserId },
     });
 
-    // 응답이 { success, data } 형태인지 확인
+    // 응답이 { success, data: { content, pageInfo } } 형태인지 확인
     if (response.data.success && response.data.data) {
-      return Array.isArray(response.data.data) ? response.data.data : [];
+      const data = response.data.data;
+
+      // content 배열이 있는 경우 (페이지네이션 응답)
+      if (data.content && Array.isArray(data.content)) {
+        return data.content;
+      }
+
+      // 직접 배열인 경우
+      return Array.isArray(data) ? data : [];
     }
 
     // 배열로 직접 반환되는 경우

@@ -77,9 +77,13 @@ export const postService = {
     return response.data.data;
   },
 
-  toggleLike: async (postId: number): Promise<{ liked: boolean; likeCount: number }> => {
-    const response = await apiClient.post<ApiResponse<{ liked: boolean; likeCount: number }>>(`/posts/${postId}/like`);
-    return response.data.data;
+  toggleLike: async (postId: number, currentUserId: number): Promise<{ liked: boolean; likeCount: number }> => {
+    const response = await apiClient.post<ApiResponse<{ isLiked: boolean; totalLikeCount: number }>>(`/posts/${postId}/like?currentUserId=${currentUserId}`);
+    // 백엔드 응답을 프론트엔드 형식으로 변환
+    return {
+      liked: response.data.data.isLiked,
+      likeCount: response.data.data.totalLikeCount,
+    };
   },
 
   getLikeStatus: async (postId: number, currentUserId?: number): Promise<{ liked: boolean }> => {
@@ -88,15 +92,30 @@ export const postService = {
     return response.data.data;
   },
 
-  toggleScrap: async (postId: number, folderId?: number): Promise<{ scraped: boolean }> => {
-    const response = await apiClient.post<ApiResponse<{ scraped: boolean }>>(`/posts/${postId}/scrap`, { folderId });
-    return response.data.data;
+  toggleScrap: async (postId: number, currentUserId: number, currentScrapedState: boolean, folderId?: number): Promise<{ scraped: boolean }> => {
+    // 현재 스크랩 상태를 기준으로 적절한 API 호출
+    if (currentScrapedState) {
+      // 이미 스크랩되어 있으면 DELETE로 취소
+      await apiClient.delete(`/posts/${postId}/scrap?currentUserId=${currentUserId}`);
+      return { scraped: false };
+    } else {
+      // 스크랩되어 있지 않으면 POST로 추가
+      const requestBody = {
+        postId,
+        folderId: folderId || null,
+      };
+      await apiClient.post(`/posts/${postId}/scrap?currentUserId=${currentUserId}`, requestBody);
+      return { scraped: true };
+    }
   },
 
   getScrapStatus: async (postId: number, currentUserId?: number): Promise<{ scraped: boolean }> => {
     const params = currentUserId ? { currentUserId } : {};
-    const response = await apiClient.get<ApiResponse<{ scraped: boolean }>>(`/posts/${postId}/scrap/status`, { params });
-    return response.data.data;
+    const response = await apiClient.get<ApiResponse<boolean>>(`/posts/${postId}/scrap/status`, { params });
+
+    // 백엔드는 data: true/false (불리언)를 반환, 프론트엔드는 { scraped: boolean } 형태 필요
+    const scrapedValue = response.data.data;
+    return { scraped: scrapedValue };
   },
 
   // 특정 작성자의 게시글 조회
