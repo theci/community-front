@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Comment } from '@/lib/types';
 import { CommentForm } from './CommentForm';
 import { Button } from '@/components/ui';
@@ -32,12 +32,19 @@ export function CommentItem({
   const isAuthor = currentUserId === comment.author.id;
   const isDeleted = comment.status === 'DELETED';
 
+  // 답글이 있으면 자동으로 펼치기
+  useEffect(() => {
+    if (comment.replies && comment.replies.length > 0) {
+      setShowReplies(true);
+    }
+  }, [comment.replies]);
+
   // 최대 5단계까지 들여쓰기, 이후는 5단계 레벨 유지
   const currentDepth = Math.min(depth, 5);
   const nextDepth = Math.min(depth + 1, 5);
 
-  // depth에 따른 왼쪽 여백 (0: 0px, 1: 24px, 2: 48px, ...)
-  const indentClass = currentDepth > 0 ? `ml-${currentDepth * 6}` : '';
+  // depth 5 미만일 때만 들여쓰기 추가 (5 이상은 더 이상 들여쓰기 안 함)
+  const shouldIndent = depth > 0 && depth < 5;
 
   // depth에 따른 배경색 (깊이 구분)
   const bgColorClass = currentDepth === 0
@@ -101,7 +108,7 @@ export function CommentItem({
   };
 
   return (
-    <div className={`comment-item ${currentDepth > 0 ? 'pl-6 border-l-2 border-gray-200' : ''}`}>
+    <div className={`comment-item ${shouldIndent ? 'pl-6 border-l-2 border-gray-200' : ''}`}>
       <div className="flex gap-3">
         {/* 프로필 이미지 */}
         <div className="flex-shrink-0">
@@ -124,11 +131,6 @@ export function CommentItem({
               <span className="text-xs text-gray-500">{formatDate(comment.createdAt)}</span>
               {comment.updatedAt !== comment.createdAt && (
                 <span className="text-xs text-gray-500">(수정됨)</span>
-              )}
-              {currentDepth > 0 && (
-                <span className="text-xs px-1.5 py-0.5 bg-white rounded text-gray-600">
-                  답글 Lv.{currentDepth}
-                </span>
               )}
             </div>
 

@@ -72,13 +72,20 @@ export function CommentList({ postId }: CommentListProps) {
         user.id
       );
 
+      // 새 답글에 replies 배열 초기화 (백엔드에서 없을 수 있음)
+      const replyWithReplies = {
+        ...newReply,
+        replies: newReply.replies || [],
+        replyCount: newReply.replyCount || 0,
+      };
+
       // 답글을 부모 댓글의 replies 배열에 추가
       const updateCommentsWithReply = (commentList: Comment[]): Comment[] => {
         return commentList.map((comment) => {
           if (comment.id === parentId) {
             return {
               ...comment,
-              replies: [...(comment.replies || []), newReply],
+              replies: [...(comment.replies || []), replyWithReplies],
               replyCount: comment.replyCount + 1,
             };
           }
@@ -223,6 +230,7 @@ export function CommentList({ postId }: CommentListProps) {
               key={comment.id}
               comment={comment}
               currentUserId={user?.id}
+              depth={0}
               onReply={handleReply}
               onEdit={handleEdit}
               onDelete={handleDelete}

@@ -49,18 +49,19 @@ export enum PostStatus {
 export interface PostCreateRequest {
   title: string;
   content: string;
+  contentType: 'MARKDOWN' | 'HTML' | 'PLAIN_TEXT';
+  categoryId: number;  // 필수!
   summary?: string;
-  categoryId?: number;
-  tagIds?: number[];
-  status: PostStatus;
+  tags?: string[];
 }
 
 export interface PostUpdateRequest {
   title?: string;
   content?: string;
+  contentType?: 'MARKDOWN' | 'HTML' | 'PLAIN_TEXT';
   summary?: string;
   categoryId?: number;
-  tagIds?: number[];
+  tags?: string[];
 }
 
 export interface PostSearchRequest {

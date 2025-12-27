@@ -10,14 +10,14 @@ interface ApiResponse<T> {
 
 export const attachmentService = {
   // 첨부파일 업로드 (다중 파일)
-  uploadAttachments: async (postId: number, files: File[]): Promise<Attachment[]> => {
+  uploadAttachments: async (postId: number, files: File[], currentUserId: number): Promise<Attachment[]> => {
     const formData = new FormData();
     files.forEach((file) => {
       formData.append('files', file);
     });
 
     const response = await apiClient.post<ApiResponse<Attachment[]>>(
-      `/posts/${postId}/attachments`,
+      `/posts/${postId}/attachments?currentUserId=${currentUserId}`,
       formData,
       {
         headers: {
