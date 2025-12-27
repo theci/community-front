@@ -6,3 +6,4 @@ export * from './point';
 export * from './attachment';
 export * from './scrap';
 export * from './notification';
+export * from './admin';
