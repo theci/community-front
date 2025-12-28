@@ -15,7 +15,7 @@
 
 `.env.local` 파일이 이미 생성되어 있습니다:
 ```bash
-NEXT_PUBLIC_API_URL=http://54.180.251.210:8080/api/v1
+NEXT_PUBLIC_API_URL=http://3.39.36.234:8080/api/v1
 ```
 
 필요시 수정:
@@ -41,7 +41,7 @@ cd /home/ec2-user/DDD2/frontend
 PORT=3001 npm run dev
 ```
 
-**접속 URL**: `http://54.180.251.210:3001`
+**접속 URL**: `http://3.39.36.234:3001`
 
 ### 방법 2: 기본 포트 3000 사용
 
@@ -57,7 +57,7 @@ cd /home/ec2-user/DDD2/frontend
 npm run dev
 ```
 
-**접속 URL**: `http://54.180.251.210:3000`
+**접속 URL**: `http://3.39.36.234:3000`
 
 ### 백그라운드 실행
 
@@ -123,7 +123,7 @@ pkill -f "next dev"
    ```
 
 4. **접속 테스트**
-   - URL: `http://54.180.251.210:3000`
+   - URL: `http://3.39.36.234:3000`
 
 ### 빌드 없이 재시작만 (코드 변경 없을 때)
 
@@ -174,7 +174,7 @@ cat /home/ec2-user/DDD2/frontend/.env.local
 
 백엔드 서버 상태 확인:
 ```bash
-curl http://54.180.251.210:8080/api/v1/auth/login
+curl http://3.39.36.234:8080/api/v1/auth/login
 docker logs community-platform-api
 ```
 

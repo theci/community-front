@@ -83,6 +83,7 @@ export default function LoginPage() {
               }}
               error={formErrors.email}
               placeholder="example@email.com"
+              autoComplete="email"
               required
             />
 
@@ -96,6 +97,7 @@ export default function LoginPage() {
               }}
               error={formErrors.password}
               placeholder="••••••••"
+              autoComplete="current-password"
               required
             />
 

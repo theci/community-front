@@ -109,13 +109,13 @@
 
 ```bash
 # 스크랩 추가 후 조회
-curl -X POST "http://54.180.251.210:8080/api/v1/posts/13/scrap?currentUserId=1" \
+curl -X POST "http://3.39.36.234:8080/api/v1/posts/13/scrap?currentUserId=1" \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"postId": 13, "folderId": null}'
 
 # 스크랩 목록 조회
-curl "http://54.180.251.210:8080/api/v1/posts/scrap-folders/2/scraps?currentUserId=1" \
+curl "http://3.39.36.234:8080/api/v1/posts/scrap-folders/2/scraps?currentUserId=1" \
   -H "Authorization: Bearer $TOKEN"
 
 # 응답에 postId, post 객체가 포함되어야 함
