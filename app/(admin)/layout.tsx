@@ -11,16 +11,16 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   const router = useRouter();
-  const { user, isAuthenticated, loading } = useAuth();
+  const { user, isAuthenticated, isLoading } = useAuth();
 
   useEffect(() => {
-    if (!loading && !isAuthenticated) {
+    if (!isLoading && !isAuthenticated) {
       router.push('/login?redirect=/admin');
     }
-  }, [isAuthenticated, loading, router]);
+  }, [isAuthenticated, isLoading, router]);
 
   useEffect(() => {
-    if (!loading && isAuthenticated && user) {
+    if (!isLoading && isAuthenticated && user) {
       console.log('[Admin Layout] User:', user);
       console.log('[Admin Layout] User role:', user.role);
       console.log('[Admin Layout] Role type:', typeof user.role);
@@ -31,9 +31,9 @@ export default function AdminLayout({
         router.push('/');
       }
     }
-  }, [user, isAuthenticated, loading, router]);
+  }, [user, isAuthenticated, isLoading, router]);
 
-  if (loading || !isAuthenticated || !user || user.role !== 'ADMIN') {
+  if (isLoading || !isAuthenticated || !user || user.role !== 'ADMIN') {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 dark:border-blue-500"></div>

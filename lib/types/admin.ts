@@ -20,12 +20,7 @@ export interface RoleStatistics {
 export interface PointStatistics {
   totalPoints: number;
   averagePoints: number;
-  topUsers: Array<{
-    userId: number;
-    username: string;
-    nickname?: string;
-    points: number;
-  }>;
+  totalUsers: number;
 }
 
 export interface Report {

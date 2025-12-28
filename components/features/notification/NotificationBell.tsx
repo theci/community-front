@@ -2,22 +2,26 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { notificationService } from '@/lib/services';
+import { useAuth } from '@/lib/hooks';
 import { Badge } from '@/components/ui';
 import NotificationList from './NotificationList';
 
 export default function NotificationBell() {
+  const { user, isAuthenticated } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    loadUnreadCount();
+    if (isAuthenticated && user?.id) {
+      loadUnreadCount();
 
-    // 30초마다 미읽은 알림 수 업데이트
-    const interval = setInterval(loadUnreadCount, 30000);
+      // 30초마다 미읽은 알림 수 업데이트
+      const interval = setInterval(loadUnreadCount, 30000);
 
-    return () => clearInterval(interval);
-  }, []);
+      return () => clearInterval(interval);
+    }
+  }, [isAuthenticated, user?.id]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -36,8 +40,10 @@ export default function NotificationBell() {
   }, [isOpen]);
 
   const loadUnreadCount = async () => {
+    if (!user?.id) return;
+
     try {
-      const count = await notificationService.getUnreadCount();
+      const count = await notificationService.getUnreadCount(user.id);
       setUnreadCount(count);
     } catch (err) {
       // 백엔드 API가 아직 구현되지 않은 경우 조용히 실패

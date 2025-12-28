@@ -166,7 +166,7 @@ const response = await apiClient.post<ApiResponse<AuthResponse>>('/auth/login');
 ### 4. curl로 백엔드 직접 테스트
 ```bash
 # 게시글 목록이 비어있는지 확인
-curl "http://54.180.251.210:8080/api/v1/posts?page=0&size=20"
+curl "http://3.39.36.234:8080/api/v1/posts?page=0&size=20"
 ```
 
 ---
@@ -421,7 +421,7 @@ const handleImageInsert = () => {
 
 초기 에러:
 ```
-GET http://54.180.251.210:3001/api/v1/files/posts/attachments/.../image.jpg 401 (Unauthorized)
+GET http://3.39.36.234:3001/api/v1/files/posts/attachments/.../image.jpg 401 (Unauthorized)
 ```
 
 이후 에러:
@@ -452,7 +452,7 @@ const s3Url = `https://test-airgateway.s3.ap-northeast-2.amazonaws.com/${attachm
 
 **단계 3**: 백엔드 API로 프록시 시도
 ```
-GET http://54.180.251.210:8080/api/v1/files/posts/attachments/.../image.jpg
+GET http://3.39.36.234:8080/api/v1/files/posts/attachments/.../image.jpg
 → 401 Unauthorized (인증 필요)
 ```
 
@@ -1344,7 +1344,7 @@ try {
 ```
 AxiosError: Request failed with status code 500
 at lib/services/postService.ts (81:22)
-POST http://54.180.251.210:8080/api/v1/posts/{postId}/like
+POST http://3.39.36.234:8080/api/v1/posts/{postId}/like
 ```
 
 ### 원인
@@ -1884,5 +1884,160 @@ export default {
 - `lib/store/themeStore.ts` - 테마 상태 관리
 - `components/providers/ThemeProvider.tsx` - 테마 프로바이더
 - `components/ui/ThemeToggle.tsx` - 테마 토글 버튼
+
+---
+
+## 13. React Hydration 에러 - Input 컴포넌트 ID 불일치
+
+### 문제
+**날짜**: 2025-12-28
+
+로그인 페이지에서 React hydration 에러 발생:
+```
+A tree hydrated but some attributes of the server rendered HTML didn't match the client properties.
+```
+
+Input 요소의 `id`와 `htmlFor` 속성이 서버와 클라이언트에서 다른 값을 가짐:
+- 서버: `input-ns0fbpgkx`
+- 클라이언트: `input-my2caz8d0`
+
+### 원인
+
+Input 컴포넌트에서 `Math.random()`으로 ID를 동적 생성:
+
+```typescript
+// components/ui/Input.tsx (문제가 있던 코드)
+const inputId = id || `input-${Math.random().toString(36).substr(2, 9)}`;
+```
+
+**문제점**:
+- 서버 렌더링 시 생성된 ID와 클라이언트 hydration 시 생성된 ID가 다름
+- `Math.random()`은 매번 다른 값을 반환하므로 불일치 발생
+- React는 서버와 클라이언트의 HTML이 정확히 일치해야 함
+
+### 해결
+
+React 18의 `useId` hook 사용:
+
+```typescript
+// components/ui/Input.tsx (수정 후)
+import { InputHTMLAttributes, forwardRef, useId } from 'react';
+
+const Input = forwardRef<HTMLInputElement, InputProps>(
+  ({ label, error, helperText, fullWidth = true, className = '', id, disabled, ...props }, ref) => {
+    const autoId = useId();  // ✅ React가 서버/클라이언트 동일한 ID 생성
+    const inputId = id || autoId;
+    // ...
+  }
+);
+```
+
+**변경 사항**:
+- `Math.random()` → `useId()` hook
+- `useId()`는 서버와 클라이언트에서 일관된 ID를 생성
+- Hydration 에러 해결
+
+### 학습 포인트
+
+#### 1. React Hydration 이해
+- 서버에서 생성한 HTML과 클라이언트에서 렌더링한 HTML이 정확히 일치해야 함
+- 불일치 시 React는 경고를 표시하고 클라이언트 HTML로 교체
+
+#### 2. useId Hook (React 18+)
+```typescript
+const id = useId();  // 서버/클라이언트 일관된 ID 생성
+```
+
+**사용 시기**:
+- 접근성 속성 연결 (`htmlFor`, `aria-describedby`)
+- 서버 사이드 렌더링 환경
+- 고유 ID가 필요한 경우
+
+**사용하지 말아야 할 경우**:
+- 리스트 아이템의 `key` prop
+- CSS 선택자 (불안정한 ID)
+
+#### 3. Hydration 에러 원인
+- `Math.random()`, `Date.now()` 같은 비결정적 값
+- 브라우저 전용 API (typeof window !== 'undefined')
+- 타임존/로케일 차이
+- 외부 데이터 변경
+
+### 참고 파일
+- `components/ui/Input.tsx` - Input 컴포넌트
+
+---
+
+## 14. Input Autocomplete 경고
+
+### 문제
+**날짜**: 2025-12-28
+
+브라우저 콘솔에 DOM 경고 발생:
+```
+[DOM] Input elements should have autocomplete attributes (suggested: "current-password")
+```
+
+### 원인
+
+로그인 페이지의 이메일/비밀번호 Input에 `autocomplete` 속성 누락
+
+**문제점**:
+- 브라우저가 자동완성 기능을 제공하지 못함
+- 접근성 및 사용자 경험 저하
+- 비밀번호 관리자가 제대로 작동하지 않을 수 있음
+
+### 해결
+
+Input 요소에 적절한 `autoComplete` 속성 추가:
+
+```typescript
+// app/(auth)/login/page.tsx (수정 후)
+<Input
+  label="이메일"
+  type="email"
+  value={formData.email}
+  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+  autoComplete="email"  // ✅ 이메일 자동완성
+  required
+/>
+
+<Input
+  label="비밀번호"
+  type="password"
+  value={formData.password}
+  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+  autoComplete="current-password"  // ✅ 현재 비밀번호 자동완성
+  required
+/>
+```
+
+### 학습 포인트
+
+#### 1. 주요 autocomplete 값
+
+| 값 | 용도 |
+|---|---|
+| `email` | 이메일 주소 |
+| `current-password` | 로그인 시 현재 비밀번호 |
+| `new-password` | 회원가입/비밀번호 변경 시 새 비밀번호 |
+| `username` | 사용자 이름 |
+| `name` | 전체 이름 |
+| `tel` | 전화번호 |
+| `off` | 자동완성 비활성화 |
+
+#### 2. 보안 및 UX 향상
+- 비밀번호 관리자 통합
+- 자동완성으로 입력 속도 향상
+- 모바일에서 적절한 키보드 표시
+
+#### 3. Input 컴포넌트 재사용성
+```typescript
+// Input 컴포넌트는 {...props}로 모든 HTML 속성 지원
+<Input autoComplete="email" {...otherProps} />
+```
+
+### 참고 파일
+- `app/(auth)/login/page.tsx` - 로그인 페이지
 
 ---

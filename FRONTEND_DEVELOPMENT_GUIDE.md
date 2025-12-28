@@ -170,7 +170,7 @@ test/frontend/
 cp .env.local.example .env.local
 
 # 환경 변수 설정
-NEXT_PUBLIC_API_URL=http://54.180.251.210:8080/api/v1
+NEXT_PUBLIC_API_URL=http://3.39.36.234:8080/api/v1
 ```
 
 #### 의존성 설치 및 실행
@@ -180,7 +180,7 @@ npm install
 npm run dev
 ```
 
-브라우저에서 `http://54.180.251.210:3000` 접속
+브라우저에서 `http://3.39.36.234:3000` 접속
 
 ### 2. Docker 환경
 
@@ -203,9 +203,9 @@ docker-compose up community-api
 ```
 
 #### 서비스 확인
-- 프론트엔드: http://54.180.251.210:3000
-- 백엔드 API: http://54.180.251.210:8080
-- H2 Console: http://54.180.251.210:8080/h2-console
+- 프론트엔드: http://3.39.36.234:3000
+- 백엔드 API: http://3.39.36.234:8080
+- H2 Console: http://3.39.36.234:8080/h2-console
 
 
 ### 설계시 redirect되는 경로를 사용자 경험 측면에서 잘 신경써서 만들어줘 
@@ -1149,7 +1149,7 @@ interface AuthState {
 // lib/api.ts
 import axios from 'axios';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://54.180.251.210:8080/api/v1';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://3.39.36.234:8080/api/v1';
 
 export const apiClient = axios.create({
   baseURL: API_BASE_URL,
@@ -1451,7 +1451,7 @@ export function sanitizeHTML(dirty: string): string {
 ### 4. 환경 변수 보호
 ```bash
 # .env.local (절대 커밋하지 않음)
-NEXT_PUBLIC_API_URL=http://54.180.251.210:8080/api/v1
+NEXT_PUBLIC_API_URL=http://3.39.36.234:8080/api/v1
 
 # 민감 정보는 NEXT_PUBLIC_ 접두사 사용 금지
 SECRET_KEY=xxx  # 서버 사이드에서만 접근 가능
@@ -1575,13 +1575,13 @@ export const handlers = [
 import { test, expect } from '@playwright/test';
 
 test('should login successfully', async ({ page }) => {
-  await page.goto('http://54.180.251.210:3000/login');
+  await page.goto('http://3.39.36.234:3000/login');
 
   await page.fill('input[name="email"]', 'test@example.com');
   await page.fill('input[name="password"]', 'password123');
   await page.click('button[type="submit"]');
 
-  await expect(page).toHaveURL('http://54.180.251.210:3000/');
+  await expect(page).toHaveURL('http://3.39.36.234:3000/');
 });
 ```
 
@@ -1607,7 +1607,7 @@ docker-compose up --build
 #### 개발 환경
 ```bash
 # .env.local
-NEXT_PUBLIC_API_URL=http://54.180.251.210:8080/api/v1
+NEXT_PUBLIC_API_URL=http://3.39.36.234:8080/api/v1
 ```
 
 #### 프로덕션 환경

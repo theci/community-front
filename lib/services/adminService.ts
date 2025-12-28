@@ -34,8 +34,17 @@ class AdminService {
    * 역할별 통계 조회
    */
   async getRoleStatistics(): Promise<RoleStatistics[]> {
-    const response = await apiClient.get<ApiResponse<RoleStatistics[]>>('/roles/statistics');
-    return response.data.data;
+    const response = await apiClient.get<ApiResponse<Record<string, number>>>('/roles/statistics');
+    const statisticsMap = response.data.data;
+
+    // Map 형태를 배열로 변환하고 percentage 계산
+    const totalCount = Object.values(statisticsMap).reduce((sum, count) => sum + count, 0);
+
+    return Object.entries(statisticsMap).map(([role, count]) => ({
+      role,
+      count,
+      percentage: totalCount > 0 ? (count / totalCount) * 100 : 0
+    }));
   }
 
   /**

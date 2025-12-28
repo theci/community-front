@@ -9,29 +9,29 @@ interface ApiResponse<T> {
 }
 
 export const notificationService = {
-  getNotifications: async (page = 0, size = 20): Promise<NotificationListResponse> => {
+  getNotifications: async (userId: number, page = 0, size = 20): Promise<NotificationListResponse> => {
     const response = await apiClient.get<ApiResponse<NotificationListResponse>>(
-      `/notifications/me?page=${page}&size=${size}`
+      `/notifications?currentUserId=${userId}&page=${page}&size=${size}`
     );
     return response.data.data;
   },
 
-  getUnreadCount: async (): Promise<number> => {
-    const response = await apiClient.get<ApiResponse<{ count: number }>>(
-      '/notifications/me/unread-count'
+  getUnreadCount: async (userId: number): Promise<number> => {
+    const response = await apiClient.get<ApiResponse<number>>(
+      `/notifications/unread-count?currentUserId=${userId}`
     );
-    return response.data.data.count;
+    return response.data.data;
   },
 
-  markAsRead: async (notificationId: number): Promise<void> => {
-    await apiClient.put(`/notifications/${notificationId}/read`);
+  markAsRead: async (notificationId: number, userId: number): Promise<void> => {
+    await apiClient.put(`/notifications/${notificationId}/read?currentUserId=${userId}`);
   },
 
-  markAllAsRead: async (): Promise<void> => {
-    await apiClient.put('/notifications/read-all');
+  markAllAsRead: async (userId: number): Promise<void> => {
+    await apiClient.put(`/notifications/read-all?currentUserId=${userId}`);
   },
 
-  deleteNotification: async (notificationId: number): Promise<void> => {
-    await apiClient.delete(`/notifications/${notificationId}`);
+  deleteNotification: async (notificationId: number, userId: number): Promise<void> => {
+    await apiClient.delete(`/notifications/${notificationId}?currentUserId=${userId}`);
   },
 };

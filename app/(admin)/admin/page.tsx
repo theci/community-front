@@ -146,34 +146,12 @@ export default function AdminDashboardPage() {
                   {pointStats.averagePoints.toFixed(0)}P
                 </span>
               </div>
-
-              {pointStats.topUsers.length > 0 && (
-                <div className="mt-4">
-                  <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                    상위 사용자
-                  </h3>
-                  <div className="space-y-2">
-                    {pointStats.topUsers.slice(0, 5).map((user, index) => (
-                      <div
-                        key={user.userId}
-                        className="flex items-center justify-between text-sm"
-                      >
-                        <div className="flex items-center gap-2">
-                          <span className="w-6 h-6 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700 text-xs font-semibold">
-                            {index + 1}
-                          </span>
-                          <span className="text-gray-900 dark:text-white">
-                            {user.nickname || user.username}
-                          </span>
-                        </div>
-                        <span className="text-blue-600 dark:text-blue-400 font-medium">
-                          {user.points.toLocaleString()}P
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
+              <div className="flex justify-between items-center py-2">
+                <span className="text-gray-600 dark:text-gray-400">전체 사용자</span>
+                <span className="text-lg font-semibold text-gray-900 dark:text-white">
+                  {pointStats.totalUsers.toLocaleString()}명
+                </span>
+              </div>
             </div>
           ) : (
             <p className="text-gray-500 dark:text-gray-400">데이터가 없습니다.</p>

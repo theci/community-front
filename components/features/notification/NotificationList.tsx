@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { notificationService } from '@/lib/services';
+import { useAuth } from '@/lib/hooks';
 import { Button } from '@/components/ui';
 import type { Notification } from '@/lib/types';
 import NotificationItem from './NotificationItem';
@@ -11,17 +12,22 @@ interface NotificationListProps {
 }
 
 export default function NotificationList({ onNotificationRead }: NotificationListProps) {
+  const { user } = useAuth();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    loadNotifications();
-  }, []);
+    if (user?.id) {
+      loadNotifications();
+    }
+  }, [user?.id]);
 
   const loadNotifications = async () => {
+    if (!user?.id) return;
+
     try {
       setLoading(true);
-      const response = await notificationService.getNotifications(0, 10);
+      const response = await notificationService.getNotifications(user.id, 0, 10);
       setNotifications(Array.isArray(response.content) ? response.content : []);
     } catch (err) {
       // 백엔드 API가 아직 구현되지 않은 경우 조용히 실패
@@ -33,8 +39,10 @@ export default function NotificationList({ onNotificationRead }: NotificationLis
   };
 
   const handleMarkAsRead = async (notificationId: number) => {
+    if (!user?.id) return;
+
     try {
-      await notificationService.markAsRead(notificationId);
+      await notificationService.markAsRead(notificationId, user.id);
       setNotifications(prev =>
         prev.map(n => n.id === notificationId ? { ...n, isRead: true } : n)
       );
@@ -47,8 +55,10 @@ export default function NotificationList({ onNotificationRead }: NotificationLis
   };
 
   const handleMarkAllAsRead = async () => {
+    if (!user?.id) return;
+
     try {
-      await notificationService.markAllAsRead();
+      await notificationService.markAllAsRead(user.id);
       setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
       if (onNotificationRead) {
         onNotificationRead();
@@ -59,8 +69,10 @@ export default function NotificationList({ onNotificationRead }: NotificationLis
   };
 
   const handleDelete = async (notificationId: number) => {
+    if (!user?.id) return;
+
     try {
-      await notificationService.deleteNotification(notificationId);
+      await notificationService.deleteNotification(notificationId, user.id);
       setNotifications(prev => prev.filter(n => n.id !== notificationId));
       if (onNotificationRead) {
         onNotificationRead();
