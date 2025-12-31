@@ -6,27 +6,47 @@ interface PostCardProps {
 }
 
 export function PostCard({ post }: PostCardProps) {
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diff = now.getTime() - date.getTime();
-    const hours = Math.floor(diff / (1000 * 60 * 60));
+  const formatDate = (dateString: string | undefined | null) => {
+    if (!dateString) {
+      console.error('No date provided for post:', post.id, 'Post data:', post);
+      return '날짜 없음';
+    }
 
-    if (hours < 1) {
-      const minutes = Math.floor(diff / (1000 * 60));
-      return `${minutes}분 전`;
-    } else if (hours < 24) {
-      return `${hours}시간 전`;
-    } else if (hours < 48) {
-      return '어제';
-    } else {
-      return date.toLocaleDateString('ko-KR', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-      });
+    try {
+      const date = new Date(dateString);
+
+      // 유효하지 않은 날짜 체크
+      if (isNaN(date.getTime())) {
+        console.error('Invalid date string:', dateString, 'for post:', post.id);
+        return '날짜 오류';
+      }
+
+      const now = new Date();
+      const diff = now.getTime() - date.getTime();
+      const hours = Math.floor(diff / (1000 * 60 * 60));
+
+      if (hours < 1) {
+        const minutes = Math.floor(diff / (1000 * 60));
+        return minutes <= 0 ? '방금 전' : `${minutes}분 전`;
+      } else if (hours < 24) {
+        return `${hours}시간 전`;
+      } else if (hours < 48) {
+        return '어제';
+      } else {
+        return date.toLocaleDateString('ko-KR', {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+        });
+      }
+    } catch (error) {
+      console.error('Error formatting date:', error, dateString);
+      return '날짜 오류';
     }
   };
+
+  // publishedAt이 있으면 우선 사용, 없으면 createdAt 사용
+  const displayDate = post.publishedAt || post.createdAt;
 
   return (
     <Link href={`/posts/${post.id}`}>
@@ -46,7 +66,7 @@ export function PostCard({ post }: PostCardProps) {
             )}
           </div>
           <span className="text-sm text-gray-500 dark:text-gray-400">
-            {formatDate(post.createdAt)}
+            {formatDate(displayDate)}
           </span>
         </div>
 
