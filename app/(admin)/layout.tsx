@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/hooks';
 import Link from 'next/link';
+import { ThemeToggle } from '@/components/ui';
 
 export default function AdminLayout({
   children,
@@ -78,12 +79,15 @@ export default function AdminLayout({
                 </Link>
               </nav>
             </div>
-            <Link
-              href="/"
-              className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100"
-            >
-              메인으로 돌아가기
-            </Link>
+            <div className="flex items-center gap-4">
+              <ThemeToggle />
+              <Link
+                href="/"
+                className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100"
+              >
+                메인으로 돌아가기
+              </Link>
+            </div>
           </div>
         </div>
       </div>

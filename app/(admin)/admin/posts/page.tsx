@@ -205,7 +205,7 @@ export default function AdminPostsPage() {
       <Card>
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-gray-50">
+            <thead className="bg-gray-50 dark:bg-gray-800">
               <tr>
                 <th className="px-4 py-3">
                   <input

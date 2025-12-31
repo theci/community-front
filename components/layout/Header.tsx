@@ -149,6 +149,18 @@ export default function Header() {
                       >
                         프로필 편집
                       </Link>
+                      {(user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN') && (
+                        <>
+                          <hr className="my-1 border-gray-200 dark:border-gray-700" />
+                          <Link
+                            href="/admin"
+                            className="block px-4 py-2 text-sm text-purple-600 dark:text-purple-400 hover:bg-gray-100 dark:hover:bg-gray-700 font-medium"
+                            onClick={() => setShowUserMenu(false)}
+                          >
+                            ⚙️ 관리자 페이지
+                          </Link>
+                        </>
+                      )}
                       <hr className="my-1 border-gray-200 dark:border-gray-700" />
                       <button
                         onClick={handleLogout}
@@ -280,6 +292,19 @@ export default function Header() {
                   >
                     프로필 편집
                   </Link>
+                  {(user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN') && (
+                    <>
+                      <hr className="my-2 border-gray-200 dark:border-gray-700" />
+                      <Link
+                        href="/admin"
+                        className="block px-4 py-2 text-purple-600 dark:text-purple-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg font-medium"
+                        onClick={() => setShowMobileMenu(false)}
+                      >
+                        ⚙️ 관리자 페이지
+                      </Link>
+                    </>
+                  )}
+                  <hr className="my-2 border-gray-200 dark:border-gray-700" />
                   <button
                     onClick={() => {
                       handleLogout();
