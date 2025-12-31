@@ -147,11 +147,11 @@ function SearchPageContent() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* 검색 헤더 */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-          <h1 className="text-2xl font-bold text-gray-900 mb-6">고급 검색</h1>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">고급 검색</h1>
 
           {/* 검색 입력 */}
           <div className="mb-4">
@@ -217,7 +217,7 @@ function SearchPageContent() {
         {!searched && searchHistory.length > 0 && (
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold text-gray-900">최근 검색어</h2>
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">최근 검색어</h2>
               <button
                 onClick={clearSearchHistory}
                 className="text-sm text-gray-500 hover:text-gray-700"
@@ -247,7 +247,7 @@ function SearchPageContent() {
         {searched && (
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-lg font-semibold text-gray-900">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
                 검색 결과 {results.length > 0 && `(${results.length})`}
               </h2>
             </div>
@@ -270,7 +270,7 @@ function SearchPageContent() {
                     href={`/posts/${post.id}`}
                     className="block border-b border-gray-200 pb-6 last:border-0 hover:bg-gray-50 transition-colors p-4 rounded-lg"
                   >
-                    <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                    <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
                       {highlightText(post.title, searchQuery)}
                     </h3>
 
@@ -315,7 +315,7 @@ function SearchPageContent() {
                     d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
                   />
                 </svg>
-                <p className="text-gray-500">검색 결과가 없습니다.</p>
+                <p className="text-gray-500 dark:text-gray-400">검색 결과가 없습니다.</p>
                 <p className="text-sm text-gray-400 mt-2">
                   다른 검색어나 필터를 시도해보세요.
                 </p>
@@ -330,7 +330,7 @@ function SearchPageContent() {
 
 export default function SearchPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-gray-50 flex items-center justify-center"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div></div>}>
+    <Suspense fallback={<div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div></div>}>
       <SearchPageContent />
     </Suspense>
   );

@@ -102,10 +102,10 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">회원가입</h1>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">회원가입</h1>
           <p className="mt-2 text-sm text-gray-600">
             Community Platform 회원이 되어보세요
           </p>
@@ -197,7 +197,7 @@ export default function RegisterPage() {
           </form>
 
           <div className="mt-6 text-center">
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-gray-600 dark:text-gray-300">
               이미 계정이 있으신가요?{' '}
               <Link href="/login" className="text-blue-600 hover:text-blue-500 font-medium">
                 로그인

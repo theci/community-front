@@ -56,10 +56,10 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">로그인</h1>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">로그인</h1>
           <p className="mt-2 text-sm text-gray-600">
             Community Platform에 오신 것을 환영합니다
           </p>
@@ -112,7 +112,7 @@ export default function LoginPage() {
           </form>
 
           <div className="mt-6 text-center">
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-gray-600 dark:text-gray-300">
               계정이 없으신가요?{' '}
               <Link href="/register" className="text-blue-600 hover:text-blue-500 font-medium">
                 회원가입

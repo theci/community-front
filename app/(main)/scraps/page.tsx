@@ -166,7 +166,7 @@ export default function ScrapsPage() {
 
   if (authLoading || loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
       </div>
     );
@@ -177,13 +177,13 @@ export default function ScrapsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* 헤더 */}
         <div className="mb-8 flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">스크랩 폴더</h1>
-            <p className="text-gray-600">
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">스크랩 폴더</h1>
+            <p className="text-gray-600 dark:text-gray-300">
               관심 있는 게시글을 폴더별로 정리하세요
             </p>
           </div>
@@ -193,7 +193,7 @@ export default function ScrapsPage() {
         </div>
 
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6">
+          <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 text-red-700 dark:text-red-400 px-4 py-3 rounded-lg mb-6">
             {error}
           </div>
         )}
@@ -203,7 +203,7 @@ export default function ScrapsPage() {
           <div className="lg:col-span-1">
             <Card className="p-0">
               <div className="p-4 border-b border-gray-200">
-                <h2 className="font-semibold text-gray-900">내 폴더</h2>
+                <h2 className="font-semibold text-gray-900 dark:text-white">내 폴더</h2>
               </div>
               <div className="divide-y divide-gray-200">
                 {folders.length === 0 ? (
@@ -235,7 +235,7 @@ export default function ScrapsPage() {
                         </div>
                       </div>
                       <div className="flex items-center justify-between">
-                        <span className="text-sm text-gray-600">
+                        <span className="text-sm text-gray-600 dark:text-gray-400">
                           {folder.scrapCount}개
                         </span>
                         {!folder.isDefault && (
@@ -278,10 +278,10 @@ export default function ScrapsPage() {
             {selectedFolder ? (
               <div>
                 <div className="mb-4 flex items-center justify-between">
-                  <h2 className="text-xl font-semibold text-gray-900">
+                  <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
                     {selectedFolder.name}
                   </h2>
-                  <span className="text-gray-600">
+                  <span className="text-gray-600 dark:text-gray-300">
                     {scraps.length}개의 스크랩
                   </span>
                 </div>
@@ -303,16 +303,16 @@ export default function ScrapsPage() {
                           <div className="flex-1">
                             {scrap.postId ? (
                               <Link href={`/posts/${scrap.postId}`}>
-                                <h3 className="text-lg font-semibold text-gray-900 mb-2 hover:text-blue-600">
+                                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2 hover:text-blue-600">
                                   {scrap.post?.title || '제목 없음'}
                                 </h3>
                               </Link>
                             ) : (
                               <div>
-                                <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
                                   {scrap.post?.title || '제목 없음'}
                                 </h3>
-                                <p className="text-sm text-red-600 mb-2">
+                                <p className="text-sm text-red-600 dark:text-red-400 mb-2">
                                   ⚠️ 백엔드 버그: 게시글 정보가 누락되었습니다
                                 </p>
                               </div>

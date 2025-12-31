@@ -69,25 +69,25 @@ export default function RankingPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 dark:border-blue-500"></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <div className="max-w-5xl mx-auto px-4 py-8">
         {/* 헤더 */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">포인트 랭킹</h1>
-          <p className="text-gray-600">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">포인트 랭킹</h1>
+          <p className="text-gray-600 dark:text-gray-300">
             활동을 통해 포인트를 쌓고 레벨을 올려보세요!
           </p>
         </div>
 
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6">
+          <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 px-4 py-3 rounded-lg mb-6">
             {error}
           </div>
         )}
@@ -123,7 +123,7 @@ export default function RankingPage() {
 
         {/* 레벨 설명 */}
         <Card className="mb-6">
-          <h3 className="font-semibold text-gray-900 mb-3">레벨 가이드</h3>
+          <h3 className="font-semibold text-gray-900 dark:text-white mb-3">레벨 가이드</h3>
           <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
             {[
               { level: 1, name: '초보', points: '0~99', color: 'text-orange-600' },
@@ -134,11 +134,11 @@ export default function RankingPage() {
             ].map((item) => (
               <div
                 key={item.level}
-                className="text-center p-3 bg-gray-50 rounded-lg"
+                className="text-center p-3 bg-gray-50 dark:bg-gray-800 rounded-lg"
               >
                 <div className="text-2xl mb-1">{getLevelBadge(item.level)}</div>
                 <div className={`font-medium ${item.color}`}>{item.name}</div>
-                <div className="text-xs text-gray-600 mt-1">{item.points}</div>
+                <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">{item.points}</div>
               </div>
             ))}
           </div>
@@ -146,10 +146,10 @@ export default function RankingPage() {
 
         {/* 랭킹 목록 */}
         <Card>
-          <h2 className="text-xl font-bold text-gray-900 mb-4">전체 랭킹</h2>
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">전체 랭킹</h2>
 
           {rankings.length === 0 ? (
-            <div className="text-center py-12 text-gray-500">
+            <div className="text-center py-12 text-gray-500 dark:text-gray-400">
               <p>아직 랭킹 데이터가 없습니다.</p>
             </div>
           ) : (
@@ -159,14 +159,14 @@ export default function RankingPage() {
                   key={`${ranking.user.id}-${index}`}
                   className={`flex items-center justify-between p-4 rounded-lg transition-colors ${
                     ranking.user.id === user?.id
-                      ? 'bg-blue-50 border border-blue-200'
-                      : 'bg-gray-50 hover:bg-gray-100'
+                      ? 'bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800'
+                      : 'bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700'
                   }`}
                 >
                   <div className="flex items-center gap-4 flex-1">
                     {/* 순위 */}
                     <div className="w-12 text-center">
-                      <span className="text-xl font-bold text-gray-700">
+                      <span className="text-xl font-bold text-gray-700 dark:text-gray-300">
                         {getRankBadge(ranking.rank)}
                       </span>
                     </div>
@@ -177,10 +177,10 @@ export default function RankingPage() {
                         {ranking.user.nickname?.charAt(0).toUpperCase() || 'U'}
                       </div>
                       <div>
-                        <div className="font-semibold text-gray-900">
+                        <div className="font-semibold text-gray-900 dark:text-white">
                           {ranking.user.nickname}
                         </div>
-                        <div className="text-sm text-gray-600">
+                        <div className="text-sm text-gray-600 dark:text-gray-400">
                           @{ranking.user.username}
                         </div>
                       </div>
@@ -196,10 +196,10 @@ export default function RankingPage() {
 
                     {/* 포인트 */}
                     <div className="text-right min-w-[120px]">
-                      <div className="text-2xl font-bold text-gray-900">
+                      <div className="text-2xl font-bold text-gray-900 dark:text-white">
                         {ranking.totalPoints.toLocaleString()}
                       </div>
-                      <div className="text-sm text-gray-600">포인트</div>
+                      <div className="text-sm text-gray-600 dark:text-gray-400">포인트</div>
                     </div>
                   </div>
                 </div>
@@ -210,34 +210,34 @@ export default function RankingPage() {
 
         {/* 포인트 획득 방법 */}
         <Card className="mt-6">
-          <h3 className="font-semibold text-gray-900 mb-3">포인트 획득 방법</h3>
+          <h3 className="font-semibold text-gray-900 dark:text-white mb-3">포인트 획득 방법</h3>
           <div className="grid md:grid-cols-2 gap-4 text-sm">
             <div className="flex items-start gap-2">
               <span className="text-green-500">✓</span>
               <div>
-                <div className="font-medium text-gray-900">게시글 작성</div>
-                <div className="text-gray-600">50 포인트</div>
+                <div className="font-medium text-gray-900 dark:text-white">게시글 작성</div>
+                <div className="text-gray-600 dark:text-gray-400">50 포인트</div>
               </div>
             </div>
             <div className="flex items-start gap-2">
               <span className="text-green-500">✓</span>
               <div>
-                <div className="font-medium text-gray-900">댓글 작성</div>
-                <div className="text-gray-600">10 포인트</div>
+                <div className="font-medium text-gray-900 dark:text-white">댓글 작성</div>
+                <div className="text-gray-600 dark:text-gray-400">10 포인트</div>
               </div>
             </div>
             <div className="flex items-start gap-2">
               <span className="text-green-500">✓</span>
               <div>
-                <div className="font-medium text-gray-900">좋아요 받기</div>
-                <div className="text-gray-600">5 포인트</div>
+                <div className="font-medium text-gray-900 dark:text-white">좋아요 받기</div>
+                <div className="text-gray-600 dark:text-gray-400">5 포인트</div>
               </div>
             </div>
             <div className="flex items-start gap-2">
               <span className="text-green-500">✓</span>
               <div>
-                <div className="font-medium text-gray-900">출석 체크</div>
-                <div className="text-gray-600">10 포인트</div>
+                <div className="font-medium text-gray-900 dark:text-white">출석 체크</div>
+                <div className="text-gray-600 dark:text-gray-400">10 포인트</div>
               </div>
             </div>
           </div>

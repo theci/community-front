@@ -136,8 +136,8 @@ export default function ProfilePage() {
 
   if (authLoading || loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 dark:border-blue-500"></div>
       </div>
     );
   }
@@ -154,10 +154,10 @@ export default function ProfilePage() {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <div className="max-w-6xl mx-auto px-4 py-8">
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6">
+          <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 px-4 py-3 rounded-lg mb-6">
             {error}
           </div>
         )}
@@ -173,16 +173,16 @@ export default function ProfilePage() {
 
               {/* 사용자 정보 */}
               <div>
-                <h1 className="text-2xl font-bold text-gray-900 mb-1">
+                <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">
                   {profile.nickname}
                 </h1>
-                <p className="text-gray-600 mb-2">@{profile.username}</p>
+                <p className="text-gray-600 dark:text-gray-300 mb-2">@{profile.username}</p>
 
                 {profile.profile?.bio && (
-                  <p className="text-gray-700 mb-3">{profile.profile.bio}</p>
+                  <p className="text-gray-700 dark:text-gray-200 mb-3">{profile.profile.bio}</p>
                 )}
 
-                <div className="flex items-center gap-4 text-sm text-gray-600">
+                <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
                   {profile.profile?.location && (
                     <div className="flex items-center gap-1">
                       <span>📍</span>
@@ -217,35 +217,35 @@ export default function ProfilePage() {
           <div className="mt-6 pt-6 border-t border-gray-200">
             <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
               <div className="text-center">
-                <div className="text-2xl font-bold text-gray-900">
+                <div className="text-2xl font-bold text-gray-900 dark:text-white">
                   {profile.stats?.postCount || 0}
                 </div>
-                <div className="text-sm text-gray-600">게시글</div>
+                <div className="text-sm text-gray-600 dark:text-gray-400">게시글</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-gray-900">
+                <div className="text-2xl font-bold text-gray-900 dark:text-white">
                   {profile.stats?.commentCount || 0}
                 </div>
-                <div className="text-sm text-gray-600">댓글</div>
+                <div className="text-sm text-gray-600 dark:text-gray-400">댓글</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-gray-900">
+                <div className="text-2xl font-bold text-gray-900 dark:text-white">
                   {profile.stats?.likeCount || 0}
                 </div>
-                <div className="text-sm text-gray-600">좋아요</div>
+                <div className="text-sm text-gray-600 dark:text-gray-400">좋아요</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-gray-900">
+                <div className="text-2xl font-bold text-gray-900 dark:text-white">
                   {profile.stats?.scrapCount || 0}
                 </div>
-                <div className="text-sm text-gray-600">스크랩</div>
+                <div className="text-sm text-gray-600 dark:text-gray-400">스크랩</div>
               </div>
               {pointInfo && (
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-blue-600">
+                  <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
                     {pointInfo.totalPoints?.toLocaleString() || 0}
                   </div>
-                  <div className="text-sm text-gray-600">
+                  <div className="text-sm text-gray-600 dark:text-gray-400">
                     포인트 ({pointInfo.levelDisplayName})
                   </div>
                 </div>
@@ -263,8 +263,8 @@ export default function ProfilePage() {
                 onClick={() => setActiveTab(tab.key)}
                 className={`px-6 py-3 font-medium text-sm border-b-2 transition-colors ${
                   activeTab === tab.key
-                    ? 'border-blue-600 text-blue-600'
-                    : 'border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300'
+                    ? 'border-blue-600 text-blue-600 dark:text-blue-400'
+                    : 'border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:border-gray-300 dark:hover:border-gray-600'
                 }`}
               >
                 {tab.label}
@@ -282,7 +282,7 @@ export default function ProfilePage() {
             <div>
               {posts.length === 0 ? (
                 <Card>
-                  <div className="text-center py-12 text-gray-500">
+                  <div className="text-center py-12 text-gray-500 dark:text-gray-400">
                     <p className="text-lg mb-2">작성한 게시글이 없습니다.</p>
                     <Link href="/posts/create">
                       <Button className="mt-4">게시글 작성하기</Button>
@@ -294,13 +294,13 @@ export default function ProfilePage() {
                   {posts.map((post) => (
                     <Card key={post.id} className="hover:shadow-md transition-shadow">
                       <Link href={`/posts/${post.id}`}>
-                        <h3 className="text-lg font-semibold text-gray-900 mb-2 hover:text-blue-600">
+                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2 hover:text-blue-600 dark:hover:text-blue-400">
                           {post.title}
                         </h3>
                         {post.summary && (
-                          <p className="text-gray-600 mb-3 line-clamp-2">{post.summary}</p>
+                          <p className="text-gray-600 dark:text-gray-300 mb-3 line-clamp-2">{post.summary}</p>
                         )}
-                        <div className="flex items-center gap-4 text-sm text-gray-500">
+                        <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
                           <span>👁️ {post.viewCount}</span>
                           <span>❤️ {post.likeCount}</span>
                           <span>💬 {post.commentCount}</span>
@@ -316,7 +316,7 @@ export default function ProfilePage() {
 
           {activeTab === 'comments' && (
             <Card>
-              <div className="text-center py-12 text-gray-500">
+              <div className="text-center py-12 text-gray-500 dark:text-gray-400">
                 <p>댓글 목록 기능은 곧 제공될 예정입니다.</p>
               </div>
             </Card>
@@ -326,7 +326,7 @@ export default function ProfilePage() {
             <div>
               {likedPosts.length === 0 ? (
                 <Card>
-                  <div className="text-center py-12 text-gray-500">
+                  <div className="text-center py-12 text-gray-500 dark:text-gray-400">
                     <p>좋아요한 게시글이 없습니다.</p>
                   </div>
                 </Card>
@@ -335,10 +335,10 @@ export default function ProfilePage() {
                   {likedPosts.map((post) => (
                     <Card key={post.id} className="hover:shadow-md transition-shadow">
                       <Link href={`/posts/${post.id}`}>
-                        <h3 className="text-lg font-semibold text-gray-900 mb-2 hover:text-blue-600">
+                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2 hover:text-blue-600 dark:hover:text-blue-400">
                           {post.title}
                         </h3>
-                        <div className="flex items-center gap-4 text-sm text-gray-500">
+                        <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
                           <span>👁️ {post.viewCount}</span>
                           <span>❤️ {post.likeCount}</span>
                           <span>💬 {post.commentCount}</span>
@@ -355,7 +355,7 @@ export default function ProfilePage() {
             <div>
               {scrappedPosts.length === 0 ? (
                 <Card>
-                  <div className="text-center py-12 text-gray-500">
+                  <div className="text-center py-12 text-gray-500 dark:text-gray-400">
                     <p className="mb-4">스크랩한 게시글이 없습니다.</p>
                     <Link href="/scraps">
                       <Button>스크랩 폴더 관리</Button>
@@ -367,10 +367,10 @@ export default function ProfilePage() {
                   {scrappedPosts.map((post) => (
                     <Card key={post.id} className="hover:shadow-md transition-shadow">
                       <Link href={`/posts/${post.id}`}>
-                        <h3 className="text-lg font-semibold text-gray-900 mb-2 hover:text-blue-600">
+                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2 hover:text-blue-600 dark:hover:text-blue-400">
                           {post.title}
                         </h3>
-                        <div className="flex items-center gap-4 text-sm text-gray-500">
+                        <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
                           <span>👁️ {post.viewCount}</span>
                           <span>❤️ {post.likeCount}</span>
                           <span>💬 {post.commentCount}</span>
