@@ -15,6 +15,10 @@ import type {
   AdjustUserPointRequest,
   UserStatus,
   UserRole,
+  PostManagement,
+  UpdatePostStatusRequest,
+  MarkAsNoticeRequest,
+  BulkPostActionRequest,
 } from '../types';
 
 interface ApiResponse<T> {
@@ -252,6 +256,86 @@ class AdminService {
    */
   async adjustUserPoint(userId: number, data: AdjustUserPointRequest): Promise<void> {
     await apiClient.post(`/admin/users/${userId}/points`, data);
+  }
+
+  // ========== 콘텐츠 관리 (Content Moderation) ==========
+
+  /**
+   * 게시글 목록 조회 (관리자용)
+   */
+  async getPostList(params: {
+    status?: string;
+    keyword?: string;
+    isNotice?: boolean;
+    page?: number;
+    size?: number;
+    sortBy?: string;
+    sortDirection?: 'ASC' | 'DESC';
+  }): Promise<{
+    content: PostManagement[];
+    pageInfo: {
+      page: number;
+      size: number;
+      totalElements: number;
+      totalPages: number;
+    };
+  }> {
+    const response = await apiClient.get<ApiResponse<{
+      content: PostManagement[];
+      totalElements: number;
+      totalPages: number;
+      size: number;
+      number: number;
+    }>>('/admin/posts', {
+      params: {
+        status: params.status,
+        keyword: params.keyword,
+        isNotice: params.isNotice,
+        page: params.page || 0,
+        size: params.size || 20,
+        sortBy: params.sortBy || 'createdAt',
+        sortDirection: params.sortDirection || 'DESC',
+      },
+    });
+
+    return {
+      content: response.data.data.content,
+      pageInfo: {
+        page: response.data.data.number,
+        size: response.data.data.size,
+        totalElements: response.data.data.totalElements,
+        totalPages: response.data.data.totalPages,
+      },
+    };
+  }
+
+  /**
+   * 게시글 상태 변경
+   */
+  async updatePostStatus(
+    postId: number,
+    adminId: number,
+    data: UpdatePostStatusRequest
+  ): Promise<void> {
+    await apiClient.put(`/admin/posts/${postId}/status`, data, {
+      params: { adminId },
+    });
+  }
+
+  /**
+   * 게시글 공지사항 지정/해제
+   */
+  async markPostAsNotice(postId: number, data: MarkAsNoticeRequest): Promise<void> {
+    await apiClient.put(`/admin/posts/${postId}/notice`, data);
+  }
+
+  /**
+   * 게시글 일괄 처리
+   */
+  async bulkPostAction(adminId: number, data: BulkPostActionRequest): Promise<void> {
+    await apiClient.post('/admin/posts/bulk-action', data, {
+      params: { adminId },
+    });
   }
 }
 

@@ -65,6 +65,12 @@ export default function AdminLayout({
                   사용자 관리
                 </Link>
                 <Link
+                  href="/admin/posts"
+                  className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 font-medium"
+                >
+                  콘텐츠 관리
+                </Link>
+                <Link
                   href="/admin/reports"
                   className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 font-medium"
                 >

@@ -152,3 +152,45 @@ export interface AdjustUserPointRequest {
   points: number;
   reason: string;
 }
+
+// Content Moderation types
+export interface PostManagement {
+  postId: number;
+  title: string;
+  summary: string;
+  authorNickname: string;
+  authorId: number;
+  categoryName: string;
+  status: import('./post').PostStatus;
+  isNoticePost: boolean;
+  viewCount: number;
+  likeCount: number;
+  commentCount: number;
+  scrapCount: number;
+  publishedAt?: string;
+  createdAt: string;
+  deletedAt?: string;
+  deletedBy?: number;
+}
+
+export interface UpdatePostStatusRequest {
+  status: import('./post').PostStatus;
+  reason?: string;
+}
+
+export interface MarkAsNoticeRequest {
+  isNotice: boolean;
+}
+
+export enum BulkActionType {
+  DELETE = 'DELETE',
+  RESTORE = 'RESTORE',
+  MARK_AS_NOTICE = 'MARK_AS_NOTICE',
+  UNMARK_AS_NOTICE = 'UNMARK_AS_NOTICE',
+}
+
+export interface BulkPostActionRequest {
+  postIds: number[];
+  action: BulkActionType;
+  reason?: string;
+}
