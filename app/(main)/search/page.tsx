@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { postService } from '@/lib/services';
@@ -10,7 +10,7 @@ import type { Post, Category } from '@/lib/types';
 const SEARCH_HISTORY_KEY = 'search_history';
 const MAX_HISTORY = 10;
 
-export default function SearchPage() {
+function SearchPageContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -27,11 +27,11 @@ export default function SearchPage() {
 
   // 임시 카테고리 데이터
   const categories: Category[] = [
-    { id: 1, name: '공지사항', slug: 'notice', description: '', postCount: 0, displayOrder: 1, isActive: true, createdAt: '', updatedAt: '' },
-    { id: 2, name: '자유게시판', slug: 'free', description: '', postCount: 0, displayOrder: 2, isActive: true, createdAt: '', updatedAt: '' },
-    { id: 3, name: '질문답변', slug: 'qna', description: '', postCount: 0, displayOrder: 3, isActive: true, createdAt: '', updatedAt: '' },
-    { id: 4, name: '개발', slug: 'dev', description: '', postCount: 0, displayOrder: 4, isActive: true, createdAt: '', updatedAt: '' },
-    { id: 5, name: '디자인', slug: 'design', description: '', postCount: 0, displayOrder: 5, isActive: true, createdAt: '', updatedAt: '' },
+    { id: 1, name: '공지사항', slug: 'notice', description: '' },
+    { id: 2, name: '자유게시판', slug: 'free', description: '' },
+    { id: 3, name: '질문답변', slug: 'qna', description: '' },
+    { id: 4, name: '개발', slug: 'dev', description: '' },
+    { id: 5, name: '디자인', slug: 'design', description: '' },
   ];
 
   useEffect(() => {
@@ -281,7 +281,7 @@ export default function SearchPage() {
                     )}
 
                     <div className="flex items-center gap-4 text-sm text-gray-500">
-                      <span>작성자: {post.authorName || '알 수 없음'}</span>
+                      <span>작성자: {post.author.nickname || '알 수 없음'}</span>
                       <span>👁️ {post.viewCount}</span>
                       <span>❤️ {post.likeCount}</span>
                       <span>💬 {post.commentCount}</span>
@@ -325,5 +325,13 @@ export default function SearchPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function SearchPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-gray-50 flex items-center justify-center"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div></div>}>
+      <SearchPageContent />
+    </Suspense>
   );
 }

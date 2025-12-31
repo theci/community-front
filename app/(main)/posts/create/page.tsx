@@ -480,12 +480,12 @@ export default function CreatePostPage() {
                           // 커스텀 이미지 렌더러: 유효한 URL만 렌더링
                           img: ({ node, src, alt, ...props }) => {
                             // src가 없거나 빈 문자열이면 렌더링하지 않음
-                            if (!src || src.trim() === '') {
+                            if (!src || (typeof src === 'string' && src.trim() === '')) {
                               return <span className="text-red-500">[이미지 URL 없음: {alt}]</span>;
                             }
 
                             // temp: URL이면 로컬 blob URL로 교체해서 미리보기
-                            if (src.startsWith('temp:')) {
+                            if (typeof src === 'string' && src.startsWith('temp:')) {
                               const tempIndex = parseInt(src.replace('temp:', ''));
                               const imageFile = imageFiles[tempIndex];
 
@@ -504,7 +504,7 @@ export default function CreatePostPage() {
                             }
 
                             // 일반 URL은 그대로 렌더링
-                            return <img src={src} alt={alt || ''} {...props} className="max-w-full h-auto" />;
+                            return <img src={typeof src === 'string' ? src : ''} alt={alt || ''} {...props} className="max-w-full h-auto" />;
                           },
                         }}
                       >

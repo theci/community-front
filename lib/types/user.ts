@@ -18,18 +18,17 @@ export interface UserProfile {
 }
 
 export enum UserRole {
-  GUEST = 'GUEST',
-  MEMBER = 'MEMBER',
-  REGULAR = 'REGULAR',
+  USER = 'USER',
+  POWER_USER = 'POWER_USER',
   MODERATOR = 'MODERATOR',
   ADMIN = 'ADMIN',
+  SUPER_ADMIN = 'SUPER_ADMIN',
 }
 
 export enum UserStatus {
   ACTIVE = 'ACTIVE',
   INACTIVE = 'INACTIVE',
-  SUSPENDED = 'SUSPENDED',
-  BANNED = 'BANNED',
+  BLOCKED = 'BLOCKED',
 }
 
 export interface LoginRequest {

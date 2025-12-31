@@ -2,12 +2,16 @@
 
 import useSWR from 'swr';
 import { scrapService } from '../services';
+import { useAuth } from './useAuth';
 import type { ScrapFolder, PostScrap } from '../types';
 
 export function useScrapFolders() {
+  const { user } = useAuth();
+  const userId = user?.id;
+
   const { data, error, isLoading, mutate } = useSWR<ScrapFolder[]>(
-    '/scrap-folders/me',
-    scrapService.getMyFolders
+    userId ? ['/scrap-folders/me', userId] : null,
+    userId ? () => scrapService.getMyFolders(userId) : null
   );
 
   return {
@@ -19,9 +23,12 @@ export function useScrapFolders() {
 }
 
 export function useScrapFolder(folderId: number | null) {
+  const { user } = useAuth();
+  const userId = user?.id;
+
   const { data, error, isLoading, mutate } = useSWR<ScrapFolder>(
-    folderId ? `/scrap-folders/${folderId}` : null,
-    folderId ? () => scrapService.getFolder(folderId) : null
+    folderId && userId ? [`/scrap-folders/${folderId}`, userId] : null,
+    folderId && userId ? () => scrapService.getFolder(folderId, userId) : null
   );
 
   return {
@@ -33,9 +40,12 @@ export function useScrapFolder(folderId: number | null) {
 }
 
 export function useScrapsInFolder(folderId: number | null) {
+  const { user } = useAuth();
+  const userId = user?.id;
+
   const { data, error, isLoading, mutate } = useSWR<PostScrap[]>(
-    folderId ? `/posts/scrap-folders/${folderId}/scraps` : null,
-    folderId ? () => scrapService.getScrapsInFolder(folderId) : null
+    folderId && userId ? [`/posts/scrap-folders/${folderId}/scraps`, userId] : null,
+    folderId && userId ? () => scrapService.getScrapsInFolder(folderId, userId) : null
   );
 
   return {
@@ -47,9 +57,12 @@ export function useScrapsInFolder(folderId: number | null) {
 }
 
 export function useMyScraps() {
+  const { user } = useAuth();
+  const userId = user?.id;
+
   const { data, error, isLoading, mutate } = useSWR<PostScrap[]>(
-    '/posts/scraps/me',
-    scrapService.getMyScraps
+    userId ? ['/posts/scraps/me', userId] : null,
+    userId ? () => scrapService.getMyScraps(userId) : null
   );
 
   return {

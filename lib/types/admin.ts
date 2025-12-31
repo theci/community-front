@@ -93,3 +93,62 @@ export interface CreateSanctionRequest {
   description?: string;
   durationDays?: number;
 }
+
+// User Management types
+// Note: UserStatus and UserRole are imported from user.ts to avoid duplication
+
+export interface UserManagement {
+  userId: number;
+  email: string;
+  nickname: string;
+  status: import('./user').UserStatus;
+  role: import('./user').UserRole;
+  currentPoints: number;
+  currentLevel: number;
+  createdAt: string;
+  lastLoginAt?: string;
+  totalPosts: number;
+  totalComments: number;
+}
+
+export interface UserDetail {
+  userId: number;
+  email: string;
+  nickname: string;
+  status: import('./user').UserStatus;
+  role: import('./user').UserRole;
+  currentPoints: number;
+  currentLevel: number;
+  createdAt: string;
+  lastLoginAt?: string;
+  bio?: string;
+  avatarUrl?: string;
+  totalPosts: number;
+  totalComments: number;
+  totalLikes: number;
+  totalScraps: number;
+  sanctions: SanctionInfo[];
+}
+
+export interface SanctionInfo {
+  sanctionId: number;
+  type: string;
+  reason: string;
+  startDate: string;
+  endDate?: string;
+  status: string;
+}
+
+export interface UpdateUserStatusRequest {
+  status: import('./user').UserStatus;
+  reason?: string;
+}
+
+export interface UpdateUserRoleRequest {
+  role: import('./user').UserRole;
+}
+
+export interface AdjustUserPointRequest {
+  points: number;
+  reason: string;
+}

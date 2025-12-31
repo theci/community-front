@@ -8,6 +8,13 @@ import type {
   ProcessReportRequest,
   Sanction,
   CreateSanctionRequest,
+  UserManagement,
+  UserDetail,
+  UpdateUserStatusRequest,
+  UpdateUserRoleRequest,
+  AdjustUserPointRequest,
+  UserStatus,
+  UserRole,
 } from '../types';
 
 interface ApiResponse<T> {
@@ -167,6 +174,84 @@ class AdminService {
     await apiClient.delete(`/moderation/sanctions/${sanctionId}`, {
       params: { userId },
     });
+  }
+
+  /**
+   * 사용자 목록 조회
+   */
+  async getUserList(params: {
+    keyword?: string;
+    status?: UserStatus;
+    role?: UserRole;
+    page?: number;
+    size?: number;
+    sortBy?: string;
+    sortDirection?: 'ASC' | 'DESC';
+  }): Promise<{
+    content: UserManagement[];
+    pageInfo: {
+      page: number;
+      size: number;
+      totalElements: number;
+      totalPages: number;
+    };
+  }> {
+    const response = await apiClient.get<ApiResponse<{
+      content: UserManagement[];
+      totalElements: number;
+      totalPages: number;
+      size: number;
+      number: number;
+    }>>('/admin/users', {
+      params: {
+        keyword: params.keyword,
+        status: params.status,
+        role: params.role,
+        page: params.page || 0,
+        size: params.size || 20,
+        sortBy: params.sortBy || 'createdAt',
+        sortDirection: params.sortDirection || 'DESC',
+      },
+    });
+
+    return {
+      content: response.data.data.content,
+      pageInfo: {
+        page: response.data.data.number,
+        size: response.data.data.size,
+        totalElements: response.data.data.totalElements,
+        totalPages: response.data.data.totalPages,
+      },
+    };
+  }
+
+  /**
+   * 사용자 상세 조회
+   */
+  async getUserDetail(userId: number): Promise<UserDetail> {
+    const response = await apiClient.get<ApiResponse<UserDetail>>(`/admin/users/${userId}`);
+    return response.data.data;
+  }
+
+  /**
+   * 사용자 상태 변경
+   */
+  async updateUserStatus(userId: number, data: UpdateUserStatusRequest): Promise<void> {
+    await apiClient.put(`/admin/users/${userId}/status`, data);
+  }
+
+  /**
+   * 사용자 역할 변경
+   */
+  async updateUserRole(userId: number, data: UpdateUserRoleRequest): Promise<void> {
+    await apiClient.put(`/admin/users/${userId}/role`, data);
+  }
+
+  /**
+   * 사용자 포인트 조정
+   */
+  async adjustUserPoint(userId: number, data: AdjustUserPointRequest): Promise<void> {
+    await apiClient.post(`/admin/users/${userId}/points`, data);
   }
 }
 
